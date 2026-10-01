@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}GearVN Admin Portal & AI/ML Analytics{% endblock %}</title>
+    <!-- FontAwesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/static/css/style.css">
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f1f5f9; }
+        .admin-layout { display: grid; grid-template-columns: 260px 1fr; min-height: 100vh; }
+        .admin-sidebar { background: #0f172a; color: #fff; padding: 24px 16px; }
+        .admin-nav-item { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-radius: 8px; color: #94a3b8; font-size: 14px; font-weight: 600; margin-bottom: 6px; transition: var(--transition); }
+        .admin-nav-item:hover, .admin-nav-item.active { background: #1e293b; color: #fff; border-left: 4px solid var(--primary); }
+        .admin-header { background: #fff; border-bottom: 1px solid #e2e8f0; padding: 16px 24px; display: flex; align-items: center; justify-content: space-between; }
+        .admin-content { padding: 24px; }
+        .stat-card { background: #fff; border-radius: 10px; border: 1px solid #e2e8f0; padding: 20px; box-shadow: var(--shadow-sm); }
+    </style>
+    {% block head %}{% endblock %}
+</head>
+<body>
+
+<div class="admin-layout">
+    <!-- SIDEBAR -->
+    <aside class="admin-sidebar">
+        <a href="/" style="display:flex;align-items:center;gap:10px;margin-bottom:32px;padding-left:8px;">
+            <i class="fa-solid fa-gamepad" style="color:var(--primary);font-size:22px;"></i>
+            <span style="font-weight:800;font-size:18px;letter-spacing:-0.5px;">GEARVN <span style="color:var(--primary);">ADMIN</span></span>
+        </a>
+
+        <div style="font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;margin:16px 0 8px 8px;">Tổng quan & AI/ML</div>
+        <a href="/admin/dashboard" class="admin-nav-item {% if active_page == 'dashboard' %}active{% endif %}">
+            <i class="fa-solid fa-chart-line" style="width:20px;"></i> Dashboard & ML Forecast
+        </a>
+        <a href="/admin/rag" class="admin-nav-item {% if active_page == 'rag' %}active{% endif %}">
+            <i class="fa-solid fa-book-open" style="width:20px;color:#a855f7;"></i> Tra Cứu Quy Định Nội Bộ
+        </a>
+
+        <div style="font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;margin:24px 0 8px 8px;">Quản Lý Bán Hàng</div>
+        <a href="/admin/products" class="admin-nav-item {% if active_page == 'products' %}active{% endif %}">
+            <i class="fa-solid fa-box-open" style="width:20px;"></i> Quản Lý Sản Phẩm
+        </a>
+        <a href="/admin/categories" class="admin-nav-item {% if active_page == 'categories' %}active{% endif %}">
+            <i class="fa-solid fa-layer-group" style="width:20px;"></i> Quản Lý Danh Mục
+        </a>
+        <a href="/admin/orders" class="admin-nav-item {% if active_page == 'orders' %}active{% endif %}">
+            <i class="fa-solid fa-receipt" style="width:20px;"></i> Quản Lý Đơn Hàng
+        </a>
+        <a href="/admin/users" class="admin-nav-item {% if active_page == 'users' %}active{% endif %}">
+            <i class="fa-solid fa-users-gear" style="width:20px;color:#3b82f6;"></i> Quản Lý Tài Khoản
+        </a>
+
+        <div style="font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;margin:24px 0 8px 8px;">Hệ Thống</div>
+        <a href="/api/v1/analytics/export-csv" class="admin-nav-item" target="_blank">
+            <i class="fa-solid fa-file-csv" style="width:20px;color:#10b981;"></i> Xuất File Sales CSV
+        </a>
+        <a href="/" class="admin-nav-item">
+            <i class="fa-solid fa-arrow-left" style="width:20px;"></i> Quay Lại Cửa Hàng
+        </a>
+        <a href="/logout" onclick="handleLogout(event)" class="admin-nav-item" style="color:#ef4444;margin-top:16px;border-top:1px solid #1e293b;padding-top:16px;">
+            <i class="fa-solid fa-right-from-bracket" style="width:20px;"></i> Đăng Xuất An Toàn
+        </a>
+    </aside>
+
+    <!-- MAIN BODY -->
+    <div style="display:flex;flex-direction:column;">
+        <header class="admin-header">
+            <div style="font-weight:700;font-size:18px;">
+                {% block page_title %}Bảng Điều Khiển Quản Trị{% endblock %}
+            </div>
+            <div style="display:flex;align-items:center;gap:16px;">
+                <div style="display:flex;align-items:center;gap:8px;font-size:13px;background:#f8fafc;padding:6px 12px;border-radius:6px;border:1px solid #e2e8f0;">
+                    <div style="width:8px;height:8px;border-radius:50%;background:#10b981;"></div>
+                    <span>Data Pipeline: <strong>Realtime .CSV Sync</strong></span>
+                </div>
+                <div style="font-size:13px;font-weight:600;display:flex;align-items:center;gap:10px;">
+                    <span id="adminHeaderUserRole"><span style="background:#fee2e2;color:#dc2626;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;"><i class="fa-solid fa-shield"></i> QUẢN TRỊ VIÊN</span></span>
+                    <span id="adminHeaderUserName" style="color:#0f172a;font-weight:700;">Quản Trị Viên</span>
+                    <a href="/logout" onclick="handleLogout(event)" style="color:#ef4444;text-decoration:none;font-size:12px;background:#fee2e2;padding:4px 10px;border-radius:6px;display:inline-flex;align-items:center;gap:4px;font-weight:700;">
+                        <i class="fa-solid fa-right-from-bracket"></i> Đăng xuất
+                    </a>
+                </div>
+            </div>
+        </header>
+
+        <main class="admin-content">
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+</div>
+
+<script src="/static/js/main.js"></script>
+<script src="/static/js/admin.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    try {
+        const uStr = localStorage.getItem("gearvn_user");
+        if (uStr) {
+            const u = JSON.parse(uStr);
+            const nameEl = document.getElementById("adminHeaderUserName");
+            const roleEl = document.getElementById("adminHeaderUserRole");
+            if (nameEl) nameEl.innerText = u.full_name || u.email;
+            if (roleEl) {
+                if (u.role === 'staff') {
+                    roleEl.innerHTML = `<span style="background:#fef3c7;color:#d97706;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;"><i class="fa-solid fa-id-badge"></i> NHÂN VIÊN</span>`;
+                } else if (u.role === 'admin') {
+                    roleEl.innerHTML = `<span style="background:#fee2e2;color:#dc2626;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;"><i class="fa-solid fa-shield"></i> QUẢN TRỊ VIÊN</span>`;
+                }
+            }
+        }
+    } catch(e) {}
+});
+</script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

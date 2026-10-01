@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng Nhập / Đăng Ký Hệ Thống - GearVN</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        :root {
+            --primary: #e30019;
+            --primary-dark: #b80014;
+            --primary-light: #fff1f2;
+            --bg-color: #0b1120;
+            --card-bg: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            --shadow-card: 0 25px 50px -12px rgba(0, 0, 0, 0.45);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0b1120 0%, #0f172a 45%, #1e1b4b 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            color: var(--text-main);
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Ambient Glowing Background Blobs */
+        .ambient-blob-1 {
+            position: absolute;
+            top: -100px;
+            left: -100px;
+            width: 450px;
+            height: 450px;
+            background: radial-gradient(circle, rgba(227, 0, 25, 0.25) 0%, transparent 70%);
+            border-radius: 50%;
+            filter: blur(50px);
+            pointer-events: none;
+        }
+
+        .ambient-blob-2 {
+            position: absolute;
+            bottom: -150px;
+            right: -100px;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(79, 70, 229, 0.25) 0%, transparent 70%);
+            border-radius: 50%;
+            filter: blur(60px);
+            pointer-events: none;
+        }
+
+        /* TOP NAVIGATION */
+        .auth-topbar {
+            width: 100%;
+            padding: 20px 32px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            z-index: 10;
+        }
+
+        .brand-logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            color: #ffffff;
+            font-size: 20px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+        }
+
+        .brand-logo i {
+            color: var(--primary);
+            font-size: 26px;
+        }
+
+        .back-home-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: #cbd5e1;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 600;
+            padding: 8px 16px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .back-home-btn:hover {
+            background: rgba(255, 255, 255, 0.18);
+            color: #ffffff;
+            transform: translateX(-2px);
+        }
+
+        /* MAIN CONTAINER */
+        .auth-container {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px 16px 40px;
+            z-index: 10;
+        }
+
+        .auth-card {
+            background: var(--card-bg);
+            width: 100%;
+            max-width: 480px;
+            border-radius: 18px;
+            padding: 36px 32px;
+            box-shadow: var(--shadow-card);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            animation: fadeIn 0.4s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(16px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .auth-header {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .auth-header-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: #fee2e2;
+            color: #dc2626;
+            font-size: 11px;
+            font-weight: 800;
+            padding: 4px 12px;
+            border-radius: 20px;
+            letter-spacing: 0.5px;
+            margin-bottom: 10px;
+        }
+
+        .auth-title {
+            font-size: 22px;
+            font-weight: 800;
+            color: #0f172a;
+            margin-bottom: 4px;
+        }
+
+        .auth-subtitle {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        /* TABS */
+        .auth-tabs {
+            display: flex;
+            border-bottom: 2px solid #f1f5f9;
+            margin-bottom: 24px;
+        }
+
+        .auth-tab-btn {
+            flex: 1;
+            padding: 12px;
+            font-size: 14px;
+            font-weight: 700;
+            background: none;
+            border: none;
+            border-bottom: 3px solid transparent;
+            color: #64748b;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .auth-tab-btn.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+
+        /* FORM ELEMENTS */
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 12.5px;
+            font-weight: 700;
+            color: #334155;
+            margin-bottom: 6px;
+        }
+
+        .input-group {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 14px;
+            color: #94a3b8;
+            font-size: 14px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 11px 14px 11px 40px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 13.5px;
+            color: #0f172a;
+            outline: none;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .form-input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(227, 0, 25, 0.12);
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 12px;
+            background: none;
+            border: none;
+            color: #94a3b8;
+            cursor: pointer;
+            font-size: 14px;
+            padding: 4px;
+        }
+
+        .password-toggle:hover {
+            color: #475569;
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 13px;
+            border-radius: 8px;
+            font-size: 14.5px;
+            font-weight: 700;
+            color: #ffffff;
+            background: linear-gradient(135deg, #e30019, #ff334b);
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 4px 14px rgba(227, 0, 25, 0.35);
+            transition: all 0.2s ease;
+            margin-top: 8px;
+        }
+
+        .btn-submit:hover {
+            background: linear-gradient(135deg, #b80014, #e30019);
+            transform: translateY(-1px);
+        }
+
+        .btn-submit:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* DEMO ACCOUNTS BOX */
+        .demo-box {
+            background: #f8fafc;
+            border: 1px dashed #cbd5e1;
+            border-radius: 10px;
+            padding: 14px;
+            margin-top: 20px;
+            font-size: 12px;
+        }
+
+        .demo-box-title {
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .demo-badges-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+        }
+
+        .demo-badge-btn {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 6px 4px;
+            font-size: 11px;
+            font-weight: 600;
+            color: #334155;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+        }
+
+        .demo-badge-btn:hover {
+            border-color: var(--primary);
+            background: #fff5f5;
+            color: var(--primary);
+            transform: translateY(-1px);
+        }
+
+        .demo-role-tag {
+            font-size: 9.5px;
+            font-weight: 700;
+            padding: 1px 6px;
+            border-radius: 4px;
+        }
+
+        .tag-admin { background: #fee2e2; color: #dc2626; }
+        .tag-staff { background: #fef3c7; color: #d97706; }
+        .tag-user { background: #e0f2fe; color: #0284c7; }
+
+        /* TOAST NOTIFICATION */
+        .toast-container {
+            position: fixed;
+            top: 24px;
+            right: 24px;
+            z-index: 999999;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .toast-item {
+            padding: 12px 18px;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 13px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(30px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .toast-success { background: #10b981; }
+        .toast-error { background: #ef4444; }
+
+        .auth-footer {
+            text-align: center;
+            padding: 16px;
+            font-size: 12px;
+            color: #64748b;
+            z-index: 10;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="ambient-blob-1"></div>
+    <div class="ambient-blob-2"></div>
+
+    <!-- TOPBAR -->
+    <header class="auth-topbar">
+        <a href="/" class="brand-logo">
+            <i class="fa-solid fa-gamepad"></i>
+            <span>GEARVN <span style="color:var(--primary);">TECH</span></span>
+        </a>
+        <a href="/" class="back-home-btn">
+            <i class="fa-solid fa-arrow-left"></i> Quay lại Cửa Hàng
+        </a>
+    </header>
+
+    <!-- AUTH CARD CONTAINER -->
+    <div class="auth-container">
+        <div class="auth-card">
+
+            <!-- HEADER -->
+            <div class="auth-header">
+                <div class="auth-header-badge">
+                    <i class="fa-solid fa-shield-halved"></i> CỔNG XÁC THỰC AN TOÀN
+                </div>
+                <h1 class="auth-title" id="authCardTitle">Đăng Nhập Tài Khoản</h1>
+                <p class="auth-subtitle" id="authCardSubtitle">Truy cập hệ thống mua sắm công nghệ & quản trị GearVN</p>
+            </div>
+
+            <!-- TABS -->
+            <div class="auth-tabs">
+                <button type="button" class="auth-tab-btn active" id="tabLogin" onclick="switchAuthTab('login')">
+                    <i class="fa-solid fa-right-to-bracket"></i> ĐĂNG NHẬP
+                </button>
+                <button type="button" class="auth-tab-btn" id="tabRegister" onclick="switchAuthTab('register')">
+                    <i class="fa-solid fa-user-plus"></i> ĐĂNG KÝ MỚI
+                </button>
+            </div>
+
+            <!-- 1. LOGIN FORM -->
+            <form id="loginForm" onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label class="form-label">Email hoặc Tên đăng nhập *</label>
+                    <div class="input-group">
+                        <i class="fa-solid fa-envelope input-icon"></i>
+                        <input type="email" id="loginEmail" required placeholder="admin@gearvn.com hoặc email của bạn" class="form-input">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Mật khẩu *</label>
+                    <div class="input-group">
+                        <i class="fa-solid fa-lock input-icon"></i>
+                        <input type="password" id="loginPassword" required placeholder="Nhập mật khẩu..." class="form-input">
+                        <button type="button" class="password-toggle" onclick="togglePasswordVisibility('loginPassword', this)">
+                            <i class="fa-solid fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;font-size:12.5px;">
+                    <label style="display:flex;align-items:center;gap:6px;cursor:pointer;color:#475569;">
+                        <input type="checkbox" id="rememberMe" checked style="accent-color:var(--primary);">
+                        <span>Ghi nhớ đăng nhập</span>
+                    </label>
+                    <a href="javascript:void(0)" onclick="alert('Quý khách hoặc nhân viên vui lòng liên hệ Bộ phận IT/Quản lý hoặc hotline 1800 6975 để được cấp lại mật khẩu.')" style="color:var(--primary);text-decoration:none;font-weight:600;">Quên mật khẩu?</a>
+                </div>
+
+                <button type="submit" class="btn-submit" id="loginSubmitBtn">
+                    <i class="fa-solid fa-arrow-right-to-bracket"></i> ĐĂNG NHẬP
+                </button>
+            </form>
+
+            <!-- 2. REGISTER FORM -->
+            <form id="registerForm" onsubmit="handleRegister(event)" style="display:none;">
+                <div class="form-group">
+                    <label class="form-label">Họ và tên của bạn *</label>
+                    <div class="input-group">
+                        <i class="fa-solid fa-user input-icon"></i>
+                        <input type="text" id="regFullName" required placeholder="Ví dụ: Nguyễn Văn An" class="form-input">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Địa chỉ Email *</label>
+                    <div class="input-group">
+                        <i class="fa-solid fa-envelope input-icon"></i>
+                        <input type="email" id="regEmail" required placeholder="an.nguyen@example.com" class="form-input">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Số điện thoại liên hệ</label>
+                    <div class="input-group">
+                        <i class="fa-solid fa-phone input-icon"></i>
+                        <input type="tel" id="regPhone" placeholder="0901234567" class="form-input">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Mật khẩu (Tối thiểu 6 ký tự) *</label>
+                    <div class="input-group">
+                        <i class="fa-solid fa-lock input-icon"></i>
+                        <input type="password" id="regPassword" required minlength="6" placeholder="Tạo mật khẩu an toàn..." class="form-input">
+                        <button type="button" class="password-toggle" onclick="togglePasswordVisibility('regPassword', this)">
+                            <i class="fa-solid fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-submit" id="regSubmitBtn" style="background:linear-gradient(135deg, #2563eb, #3b82f6);">
+                    <i class="fa-solid fa-user-check"></i> ĐĂNG KÝ TÀI KHOẢN MỚI
+                </button>
+            </form>
+
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="auth-footer">
+        © 2026 GearVN Tech Store & AI Assistant. Bản quyền thuộc về GearVN.
+    </footer>
+
+    <!-- TOAST CONTAINER -->
+    <div class="toast-container" id="toastBox"></div>
+
+    <script>
+        function showAuthToast(msg, type = "success") {
+            const container = document.getElementById("toastBox");
+            const item = document.createElement("div");
+            item.className = `toast-item ${type === 'success' ? 'toast-success' : 'toast-error'}`;
+            item.innerHTML = `<i class="fa-solid ${type === 'success' ? 'fa-circle-check' : 'fa-triangle-exclamation'}"></i> <span>${msg}</span>`;
+            container.appendChild(item);
+
+            setTimeout(() => {
+                item.style.opacity = '0';
+                item.style.transition = '0.3s ease';
+                setTimeout(() => item.remove(), 300);
+            }, 3200);
+        }
+
+        function switchAuthTab(tab) {
+            const loginForm = document.getElementById("loginForm");
+            const registerForm = document.getElementById("registerForm");
+            const tabLogin = document.getElementById("tabLogin");
+            const tabRegister = document.getElementById("tabRegister");
+            const cardTitle = document.getElementById("authCardTitle");
+            const cardSubtitle = document.getElementById("authCardSubtitle");
+
+            if (tab === 'login') {
+                loginForm.style.display = "block";
+                registerForm.style.display = "none";
+                tabLogin.classList.add("active");
+                tabRegister.classList.remove("active");
+                cardTitle.innerText = "Đăng Nhập Tài Khoản";
+                cardSubtitle.innerText = "Truy cập hệ thống mua sắm công nghệ & quản trị GearVN";
+            } else {
+                loginForm.style.display = "none";
+                registerForm.style.display = "block";
+                tabLogin.classList.remove("active");
+                tabRegister.classList.add("active");
+                cardTitle.innerText = "Đăng Ký Thành Viên";
+                cardSubtitle.innerText = "Tạo tài khoản để lưu cấu hình PC và nhận ưu đãi GearVN";
+            }
+        }
+
+        function togglePasswordVisibility(inputId, btn) {
+            const input = document.getElementById(inputId);
+            const icon = btn.querySelector("i");
+            if (input.type === "password") {
+                input.type = "text";
+                icon.className = "fa-solid fa-eye-slash";
+            } else {
+                input.type = "password";
+                icon.className = "fa-solid fa-eye";
+            }
+        }
+
+        async function handleLogin(e) {
+            e.preventDefault();
+            const email = document.getElementById("loginEmail").value.trim();
+            const password = document.getElementById("loginPassword").value;
+            const btn = document.getElementById("loginSubmitBtn");
+
+            btn.disabled = true;
+            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Đang xác thực...`;
+
+            try {
+                const res = await fetch("/api/v1/auth/login-json", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ email: email, password: password })
+                });
+
+                const data = await res.json();
+                if (res.ok) {
+                    localStorage.setItem("gearvn_token", data.access_token);
+                    localStorage.setItem("gearvn_user", JSON.stringify(data));
+                    showAuthToast(`Đăng nhập thành công! Xin chào ${data.full_name}`);
+
+                    setTimeout(() => {
+                        if (data.role === 'admin' || data.role === 'staff') {
+                            window.location.href = "/admin/dashboard";
+                        } else {
+                            // Xử lý tự động thêm sản phẩm đang chờ vào giỏ hàng
+                            try {
+                                const pendingItemStr = sessionStorage.getItem("gearvn_pending_cart_item");
+                                if (pendingItemStr) {
+                                    const { product, quantity } = JSON.parse(pendingItemStr);
+                                    sessionStorage.removeItem("gearvn_pending_cart_item");
+                                    let cartItems = JSON.parse(localStorage.getItem("gearvn_cart_items")) || [];
+                                    const existing = cartItems.find(i => i.id === product.id);
+                                    if (existing) {
+                                        existing.quantity += (quantity || 1);
+                                    } else {
+                                        cartItems.push({
+                                            id: product.id,
+                                            name: product.name,
+                                            slug: product.slug,
+                                            promo_price: product.promo_price,
+                                            original_price: product.original_price,
+                                            thumbnail: product.thumbnail,
+                                            quantity: quantity || 1
+                                        });
+                                    }
+                                    localStorage.setItem("gearvn_cart_items", JSON.stringify(cartItems));
+                                }
+                            } catch (e) {}
+
+                            // Chuyển hướng về trang trước đó nếu có
+                            const redirectUrl = sessionStorage.getItem("gearvn_redirect_after_login");
+                            sessionStorage.removeItem("gearvn_redirect_after_login");
+                            if (redirectUrl && !redirectUrl.includes("/login") && !redirectUrl.includes("/logout")) {
+                                window.location.href = redirectUrl;
+                            } else {
+                                window.location.href = "/";
+                            }
+                        }
+                    }, 800);
+                } else {
+                    showAuthToast(data.detail || "Email hoặc mật khẩu không chính xác", "error");
+                    btn.disabled = false;
+                    btn.innerHTML = `<i class="fa-solid fa-arrow-right-to-bracket"></i> ĐĂNG NHẬP`;
+                }
+            } catch (err) {
+                console.error("Login Error:", err);
+                showAuthToast("Không thể kết nối tới máy chủ xác thực", "error");
+                btn.disabled = false;
+                btn.innerHTML = `<i class="fa-solid fa-arrow-right-to-bracket"></i> ĐĂNG NHẬP`;
+            }
+        }
+
+        async function handleRegister(e) {
+            e.preventDefault();
+            const payload = {
+                full_name: document.getElementById("regFullName").value.trim(),
+                email: document.getElementById("regEmail").value.trim(),
+                phone: document.getElementById("regPhone").value.trim() || null,
+                password: document.getElementById("regPassword").value
+            };
+
+            if (payload.email.toLowerCase().endsWith("@gearvn.com")) {
+                showAuthToast("Email có đuôi @gearvn.com là tài khoản nội bộ và chỉ do Quản lý (Admin) tạo trên hệ thống.", "error");
+                return;
+            }
+
+            const btn = document.getElementById("regSubmitBtn");
+            btn.disabled = true;
+            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Đang đăng ký...`;
+
+            try {
+                const res = await fetch("/api/v1/auth/register", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await res.json();
+                if (res.ok) {
+                    showAuthToast("Đăng ký thành công! Hãy đăng nhập ngay.");
+                    switchAuthTab('login');
+                    document.getElementById("loginEmail").value = payload.email;
+                    document.getElementById("loginPassword").focus();
+                } else {
+                    showAuthToast(data.detail || "Đăng ký không thành công", "error");
+                }
+            } catch (err) {
+                console.error("Register error:", err);
+                showAuthToast("Lỗi kết nối máy chủ", "error");
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = `<i class="fa-solid fa-user-check"></i> ĐĂNG KÝ TÀI KHOẢN MỚI`;
+            }
+        }
+
+        // Tự động kiểm tra param ?tab=register trên URL
+        document.addEventListener("DOMContentLoaded", () => {
+            const params = new URLSearchParams(window.location.search);
+            if (params.get("tab") === "register") {
+                switchAuthTab("register");
+            }
+        });
+    </script>
+
+</body>
+</html>

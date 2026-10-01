@@ -1,0 +1,635 @@
+{% extends "admin/layout.html" %}
+
+{% block page_title %}Kho Quy Định & Trợ Lý Tra Cứu Chính Sách Nội Bộ GearVN{% endblock %}
+
+{% block head %}
+<style>
+    .category-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 5px 12px;
+        background: #f1f5f9;
+        border: 1px solid #cbd5e1;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+        color: #475569;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    .category-pill:hover, .category-pill.active {
+        background: #9333ea;
+        color: #fff;
+        border-color: #9333ea;
+    }
+    .doc-card {
+        padding: 12px 14px;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        background: #fff;
+        font-size: 13px;
+        transition: transform 0.15s, box-shadow 0.15s;
+    }
+    .doc-card:hover {
+        box-shadow: var(--shadow-sm);
+        border-color: #cbd5e1;
+    }
+    .file-dropzone {
+        border: 2px dashed #c084fc;
+        border-radius: 10px;
+        padding: 24px;
+        text-align: center;
+        background: #faf5ff;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    .file-dropzone:hover, .file-dropzone.dragover {
+        background: #f3e8ff;
+        border-color: #9333ea;
+    }
+    .badge-filetype {
+        font-size: 10px;
+        font-weight: 800;
+        padding: 2px 6px;
+        border-radius: 4px;
+        text-transform: uppercase;
+    }
+    .badge-pdf { background: #fee2e2; color: #dc2626; }
+    .badge-docx { background: #dbeafe; color: #1d4ed8; }
+    .badge-md { background: #f3e8ff; color: #7e22ce; }
+    .badge-txt { background: #f1f5f9; color: #475569; }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- HEADER BANNER -->
+<div style="background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%); color: #fff; padding: 18px 24px; border-radius: 12px; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
+    <div>
+        <div style="font-weight: 800; font-size: 16px; display: flex; align-items: center; gap: 8px;">
+            <i class="fa-solid fa-book-bookmark" style="color: #c084fc;"></i>
+            Trung Tâm Tra Cứu Quy Trình & Chính Sách Dành Cho Nhân Viên GearVN
+        </div>
+        <div style="font-size: 12px; color: #cbd5e1; margin-top: 4px;">
+            Hệ thống đối soát tự động chính sách bảo hành, tiêu chuẩn đổi trả, chiết khấu và quy trình vận hành &bull; Hỗ trợ nạp file Word (.docx), PDF, Markdown (.md)
+        </div>
+    </div>
+    <div style="display: flex; gap: 10px; align-items: center;">
+        <button class="btn btn-outline" style="color: #fff; border-color: rgba(255,255,255,0.3); font-size: 12px; padding: 6px 12px;" onclick="resetSampleDocs()">
+            <i class="fa-solid fa-rotate-left"></i> Khôi phục tài liệu mẫu chuẩn
+        </button>
+    </div>
+</div>
+
+<div style="display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 24px;">
+
+    <!-- LEFT COLUMN: INTERACTIVE QA ASSISTANT -->
+    <div class="stat-card" style="display: flex; flex-direction: column; height: 750px;">
+        <div style="border-bottom: 2px solid #f1f5f9; padding-bottom: 14px; margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <div style="font-weight: 800; font-size: 16px; display: flex; align-items: center; gap: 8px;">
+                    <i class="fa-solid fa-circle-question" style="color: #9333ea;"></i>
+                    Hỏi Đáp Quy Định Nhanh
+                </div>
+                <div style="font-size: 12px; color: #64748b; margin-top: 2px;">
+                    Trả lời chính xác theo văn bản quy định có độ phù hợp cao nhất
+                </div>
+            </div>
+
+            <!-- CATEGORY SELECTOR FOR QUERY -->
+            <div style="display: flex; align-items: center; gap: 6px;">
+                <label style="font-size: 11px; font-weight: 700; color: #64748b;">Danh mục:</label>
+                <select id="ragQuerySpace" style="padding: 5px 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 12px; outline: none; font-weight: 600; color: #334155;">
+                    <option value="all">🌐 Tất cả danh mục</option>
+                    {% for sp in spaces %}
+                    <option value="{{ sp }}">{{ sp }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+
+        <!-- CONVERSATION / RESPONSE BOX -->
+        <div style="flex: 1; overflow-y: auto; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; margin-bottom: 14px;" id="ragChatBody">
+            <div style="background: #fff; padding: 16px; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 12px; box-shadow: var(--shadow-sm);">
+                <div style="font-weight: 700; font-size: 13px; color: #1e293b; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+                    <i class="fa-solid fa-circle-info" style="color: #9333ea;"></i> Trợ lý giải đáp:
+                </div>
+                <div id="ragAnswerBox" style="font-size: 13.5px; color: #334155; line-height: 1.6;">
+                    Xin chào! Bạn có thể đặt câu hỏi về chính sách bảo hành, điều kiện 1 đổi 1, tiêu chuẩn điểm chết màn hình hoặc quy trình chiết khấu nhân viên. Hệ thống sẽ trích dẫn trực tiếp từ văn bản quy định chính xác nhất.
+                </div>
+                <div id="ragCitationsBox"></div>
+            </div>
+        </div>
+
+        <!-- QUICK QUESTION CHIPS -->
+        <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px;">
+            <button class="btn btn-outline" style="font-size: 11px; padding: 4px 10px;" onclick="quickRAG('Quy định đổi trả 1 đổi 1 trong 30 ngày đầu như thế nào?', 'Chính sách bảo hành')">📄 Đổi trả 30 ngày</button>
+            <button class="btn btn-outline" style="font-size: 11px; padding: 4px 10px;" onclick="quickRAG('Tiêu chuẩn xử lý điểm chết màn hình ASUS và LG ra sao?', 'Tiêu chuẩn kỹ thuật')">🖥️ Điểm chết màn hình</button>
+            <button class="btn btn-outline" style="font-size: 11px; padding: 4px 10px;" onclick="quickRAG('Chính sách chiết khấu mua hàng nội bộ cho nhân viên GearVN?', 'Chính sách nội bộ')">💼 Chiết khấu nhân viên</button>
+            <button class="btn btn-outline" style="font-size: 11px; padding: 4px 10px;" onclick="quickRAG('Quy trình nhập xuất kho linh kiện máy tính cần lưu ý gì?', 'Quy trình vận hành')">📦 Nhập xuất kho</button>
+        </div>
+
+        <!-- INPUT QUERY BOX -->
+        <div style="display: flex; gap: 8px;">
+            <input type="text" id="ragQuestionInput" placeholder="Nhập câu hỏi cần tra cứu quy định, chính sách..." style="flex: 1; padding: 10px 14px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; outline: none;" onkeydown="if(event.key==='Enter') Admin.askRAG()">
+            <button class="btn btn-primary" style="background: #9333ea; padding: 10px 20px; display: flex; align-items: center; gap: 6px;" onclick="Admin.askRAG()">
+                <i class="fa-solid fa-magnifying-glass"></i> Tra Cứu Nhanh
+            </button>
+        </div>
+    </div>
+
+    <!-- RIGHT COLUMN: DOCUMENT REPOSITORY MANAGEMENT -->
+    <div class="stat-card" style="display: flex; flex-direction: column; height: 750px;">
+        <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid #f1f5f9; padding-bottom: 14px; margin-bottom: 14px;">
+            <div>
+                <div style="font-weight: 800; font-size: 16px;">
+                    <i class="fa-solid fa-folder-open" style="color: #f59e0b;"></i> Kho Tài Liệu & Quy Trình (<span id="docCountHeader">{{ docs|length }}</span>)
+                </div>
+                <div style="font-size: 12px; color: #64748b; margin-top: 2px;">
+                    Hỗ trợ tải lên file: <b>Word (.docx), PDF (.pdf), Markdown (.md), Text (.txt)</b>
+                </div>
+            </div>
+            <button class="btn btn-primary" style="background: #9333ea; font-size: 12px; padding: 7px 14px; display: flex; align-items: center; gap: 6px;" onclick="openUploadModal()">
+                <i class="fa-solid fa-cloud-arrow-up"></i> Tải Lên File Tài Liệu
+            </button>
+        </div>
+
+        <!-- CATEGORY FILTER CHIPS -->
+        <div style="margin-bottom: 12px;">
+            <div style="font-size: 11px; font-weight: 700; color: #64748b; margin-bottom: 6px; text-transform: uppercase;">Phân nhóm quy định:</div>
+            <div style="display: flex; flex-wrap: wrap; gap: 6px;" id="spaceChipsContainer">
+                <span class="category-pill active" onclick="filterDocsBySpace('all', this)">
+                    Tất cả ({{ docs|length }})
+                </span>
+                {% for sp in spaces %}
+                <span class="category-pill" onclick="filterDocsBySpace('{{ sp }}', this)">
+                    {{ sp }}
+                </span>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- SEARCH INPUT IN DOCS -->
+        <div style="margin-bottom: 12px; position: relative;">
+            <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 10px; top: 9px; color: #94a3b8; font-size: 12px;"></i>
+            <input type="text" id="docSearchInput" placeholder="Tìm kiếm nhanh theo tiêu đề hoặc từ khóa..." style="width: 100%; padding: 7px 10px 7px 30px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 12px; outline: none;" oninput="filterDocsList()">
+        </div>
+
+        <!-- DOCUMENT LIST CONTAINER -->
+        <div style="flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px;" id="docListContainer">
+            {% for doc in docs %}
+            <div class="doc-card" id="doc-card-{{ doc.id }}" data-id="{{ doc.id }}" data-title="{{ doc.title }}" data-category="{{ doc.category }}" data-content="{{ doc.content_text }}">
+                <div style="display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 6px; gap: 8px;">
+                    <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+                        {% if doc.filename and doc.filename.lower().endswith('.pdf') %}
+                        <span class="badge-filetype badge-pdf"><i class="fa-solid fa-file-pdf"></i> PDF</span>
+                        {% elif doc.filename and (doc.filename.lower().endswith('.docx') or doc.filename.lower().endswith('.doc')) %}
+                        <span class="badge-filetype badge-docx"><i class="fa-solid fa-file-word"></i> DOCX</span>
+                        {% elif doc.filename and (doc.filename.lower().endswith('.md') or doc.filename.lower().endswith('.markdown')) %}
+                        <span class="badge-filetype badge-md"><i class="fa-brands fa-markdown"></i> MD</span>
+                        {% else %}
+                        <span class="badge-filetype badge-txt"><i class="fa-solid fa-file-lines"></i> TXT</span>
+                        {% endif %}
+                        <strong style="color: #0f172a; font-size: 13px;">{{ doc.title }}</strong>
+                    </div>
+                    <div style="display: flex; gap: 4px; flex-shrink: 0;">
+                        {% if doc.filename %}
+                        <a href="/api/v1/rag/docs/{{ doc.id }}/download" target="_blank" class="btn btn-outline" style="padding: 2px 6px; font-size: 11px; color: #10b981; background: #ecfdf5; border-color: #a7f3d0;" title="Tải file gốc: {{ doc.filename }}">
+                            <i class="fa-solid fa-download"></i>
+                        </a>
+                        {% endif %}
+                        <button class="btn btn-outline" style="padding: 2px 6px; font-size: 11px; color: #2563eb; background: #eff6ff; border-color: #bfdbfe;" onclick="openEditDocModal({{ doc.id }}, '{{ doc.title|replace("'", "\\'") }}', '{{ doc.category|replace("'", "\\'") }}', '{{ doc.content_text|replace("'", "\\'")|replace('\n', '\\n') }}')" title="Chỉnh sửa nội dung">
+                            <i class="fa-solid fa-pen-to-square"></i>
+                        </button>
+                        <button class="btn btn-outline" style="padding: 2px 6px; font-size: 11px; color: #ef4444; background: #fef2f2; border-color: #fecaca;" onclick="deleteDoc({{ doc.id }}, '{{ doc.title|replace("'", "\\'") }}')" title="Xóa tài liệu">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
+                    <span style="background: #e0f2fe; color: #0369a1; font-size: 11px; font-weight: 700; padding: 2px 6px; border-radius: 4px;">
+                        <i class="fa-solid fa-folder"></i> {{ doc.category }}
+                    </span>
+                    <span style="font-size: 11px; color: #94a3b8;">
+                        {% if doc.filename %}<code>{{ doc.filename }}</code> &bull; {% endif %}#{{ doc.id }}
+                    </span>
+                </div>
+
+                <div style="color: #475569; font-size: 12px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.5; background: #f8fafc; padding: 6px 8px; border-radius: 4px; border-left: 2px solid #cbd5e1;">
+                    {{ doc.content_text }}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- CLEAR CATEGORY ACTION BAR -->
+        <div style="margin-top: 12px; padding-top: 10px; border-top: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-size: 11px; color: #64748b;">Quản lý dữ liệu:</span>
+            <button class="btn btn-outline" style="color: #ef4444; border-color: #fca5a5; font-size: 11px; padding: 4px 10px;" onclick="promptClearSpace()">
+                <i class="fa-solid fa-trash-can"></i> Xóa toàn bộ tài liệu trong danh mục đang chọn
+            </button>
+        </div>
+    </div>
+
+</div>
+
+<!-- FILE UPLOAD MODAL (WORD / PDF / MD / TXT) -->
+<div id="uploadModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.65); z-index: 99999; align-items: center; justify-content: center; backdrop-filter: blur(3px);">
+    <div style="background: #fff; border-radius: 12px; width: 580px; max-width: 92%; max-height: 90vh; overflow-y: auto; padding: 24px; box-shadow: var(--shadow-lg);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid #e2e8f0;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <div style="width: 36px; height: 36px; border-radius: 8px; background: #f3e8ff; color: #9333ea; display: flex; align-items: center; justify-content: center; font-size: 16px;">
+                    <i class="fa-solid fa-cloud-arrow-up"></i>
+                </div>
+                <div>
+                    <h3 style="font-size: 16px; font-weight: 800; color: #0f172a; margin: 0;">Tải Lên File Tài Liệu (Word / PDF / MD)</h3>
+                    <div style="font-size: 12px; color: #64748b;">Hệ thống sẽ tự động bóc tách nội dung và lưu vào cơ sở dữ liệu tra cứu</div>
+                </div>
+            </div>
+            <button onclick="closeUploadModal()" style="border: none; background: #f1f5f9; width: 30px; height: 30px; border-radius: 50%; cursor: pointer;">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+
+        <form id="uploadDocForm" onsubmit="handleUploadFile(event)">
+            <!-- DROPZONE -->
+            <div class="file-dropzone" id="dropZone" onclick="document.getElementById('fileInput').click()">
+                <input type="file" id="fileInput" accept=".pdf,.docx,.doc,.md,.markdown,.txt" style="display: none;" onchange="onFileSelected(this)">
+                <div id="dropzoneContent">
+                    <i class="fa-solid fa-file-arrow-up" style="font-size: 36px; color: #9333ea; margin-bottom: 10px;"></i>
+                    <div style="font-weight: 700; font-size: 14px; color: #1e293b;">Kéo thả file vào đây hoặc bấm để chọn file</div>
+                    <div style="font-size: 12px; color: #64748b; margin-top: 4px;">Định dạng: <b>Microsoft Word (.docx), Adobe PDF (.pdf), Markdown (.md), Text (.txt)</b></div>
+                </div>
+                <div id="fileInfoBox" style="display: none; background: #fff; border: 1px solid #cbd5e1; border-radius: 8px; padding: 12px; margin-top: 8px; text-align: left;">
+                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <i class="fa-solid fa-file-circle-check" style="color: #10b981; font-size: 20px;" id="selectedFileIcon"></i>
+                            <div>
+                                <div style="font-weight: 700; font-size: 13px; color: #0f172a;" id="selectedFileName">file.docx</div>
+                                <div style="font-size: 11px; color: #64748b;" id="selectedFileSize">120 KB</div>
+                            </div>
+                        </div>
+                        <button type="button" onclick="clearSelectedFile(event)" style="border: none; background: transparent; color: #ef4444; font-size: 14px; cursor: pointer;">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TITLE & CATEGORY -->
+            <div style="margin-top: 14px; margin-bottom: 12px;">
+                <label style="display: block; font-size: 12px; font-weight: 700; color: #334155; margin-bottom: 4px;">Tiêu đề quy trình (Tùy chỉnh nếu cần)</label>
+                <input type="text" id="uploadDocTitle" placeholder="Tự động lấy theo tên file nếu để trống..." style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; outline: none;">
+            </div>
+
+            <div style="margin-bottom: 14px;">
+                <label style="display: block; font-size: 12px; font-weight: 700; color: #334155; margin-bottom: 4px;">Phân nhóm quy định <span style="color: #ef4444;">*</span></label>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                    <select id="uploadDocCategorySelect" style="padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; outline: none;" onchange="onUploadCategoryChange()">
+                        <option value="Chính sách bảo hành">Chính sách bảo hành</option>
+                        <option value="Tiêu chuẩn kỹ thuật">Tiêu chuẩn kỹ thuật</option>
+                        <option value="Chính sách nội bộ">Chính sách nội bộ</option>
+                        <option value="Quy trình vận hành">Quy trình vận hành</option>
+                        <option value="__custom__">+ Nhập nhóm mới...</option>
+                    </select>
+                    <input type="text" id="uploadDocCategoryCustom" placeholder="Tên nhóm mới..." style="display: none; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; outline: none;">
+                </div>
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
+                <button type="button" class="btn btn-outline" onclick="closeUploadModal()" style="padding: 9px 18px;">Hủy bỏ</button>
+                <button type="submit" id="uploadSubmitBtn" class="btn btn-primary" style="background: #9333ea; padding: 9px 22px; display: flex; align-items: center; gap: 6px;">
+                    <i class="fa-solid fa-cloud-arrow-up"></i> <span id="uploadSubmitText">Tải Lên & Lưu Trữ</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- EDIT DOCUMENT MODAL -->
+<div id="editDocModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.65); z-index: 99999; align-items: center; justify-content: center; backdrop-filter: blur(3px);">
+    <div style="background: #fff; border-radius: 12px; width: 620px; max-width: 92%; max-height: 90vh; overflow-y: auto; padding: 24px; box-shadow: var(--shadow-lg);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid #e2e8f0;">
+            <h3 id="editDocModalTitle" style="font-size: 16px; font-weight: 800; color: #0f172a; margin: 0;">Chỉnh Sửa Văn Bản Quy Trình</h3>
+            <button onclick="closeEditDocModal()" style="border: none; background: #f1f5f9; width: 30px; height: 30px; border-radius: 50%; cursor: pointer;">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+
+        <form id="editDocForm" onsubmit="handleSaveEditDoc(event)">
+            <input type="hidden" id="editModalDocId" value="">
+
+            <div style="margin-bottom: 12px;">
+                <label style="display: block; font-size: 12px; font-weight: 700; color: #334155; margin-bottom: 4px;">Tiêu đề quy trình</label>
+                <input type="text" id="editModalDocTitle" required style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; outline: none;">
+            </div>
+
+            <div style="margin-bottom: 12px;">
+                <label style="display: block; font-size: 12px; font-weight: 700; color: #334155; margin-bottom: 4px;">Phân nhóm quy định</label>
+                <input type="text" id="editModalDocCategory" required style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; outline: none;">
+            </div>
+
+            <div style="margin-bottom: 12px;">
+                <label style="display: block; font-size: 12px; font-weight: 700; color: #334155; margin-bottom: 4px;">Nội dung văn bản quy trình</label>
+                <textarea id="editModalDocContent" rows="7" required style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; outline: none; font-family: inherit; line-height: 1.5;"></textarea>
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 18px;">
+                <button type="button" class="btn btn-outline" onclick="closeEditDocModal()" style="padding: 8px 16px;">Hủy bỏ</button>
+                <button type="submit" class="btn btn-primary" style="background: #9333ea; padding: 8px 20px;">
+                    <i class="fa-solid fa-floppy-disk"></i> Lưu Thay Đổi
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+let currentActiveSpace = "all";
+
+// DRAG AND DROP HANDLERS
+const dropZone = document.getElementById("dropZone");
+['dragenter', 'dragover'].forEach(eventName => {
+    dropZone.addEventListener(eventName, e => {
+        e.preventDefault();
+        dropZone.classList.add('dragover');
+    }, false);
+});
+['dragleave', 'drop'].forEach(eventName => {
+    dropZone.addEventListener(eventName, e => {
+        e.preventDefault();
+        dropZone.classList.remove('dragover');
+    }, false);
+});
+dropZone.addEventListener('drop', e => {
+    const dt = e.dataTransfer;
+    const files = dt.files;
+    if (files.length > 0) {
+        document.getElementById('fileInput').files = files;
+        onFileSelected(document.getElementById('fileInput'));
+    }
+});
+
+function onFileSelected(input) {
+    if (!input.files || input.files.length === 0) return;
+    const file = input.files[0];
+
+    document.getElementById("dropzoneContent").style.display = "none";
+    document.getElementById("fileInfoBox").style.display = "block";
+    document.getElementById("selectedFileName").innerText = file.name;
+    document.getElementById("selectedFileSize").innerText = `${(file.size / 1024).toFixed(1)} KB`;
+
+    const ext = file.name.split('.').pop().toLowerCase();
+    const icon = document.getElementById("selectedFileIcon");
+    if (ext === "pdf") icon.className = "fa-solid fa-file-pdf text-red-500";
+    else if (ext === "docx" || ext === "doc") icon.className = "fa-solid fa-file-word text-blue-500";
+    else if (ext === "md") icon.className = "fa-brands fa-markdown text-purple-500";
+    else icon.className = "fa-solid fa-file-lines text-slate-500";
+
+    const titleInput = document.getElementById("uploadDocTitle");
+    if (!titleInput.value) {
+        titleInput.value = file.name.substring(0, file.name.lastIndexOf('.')) || file.name;
+    }
+}
+
+function clearSelectedFile(e) {
+    if (e) e.stopPropagation();
+    document.getElementById("fileInput").value = "";
+    document.getElementById("dropzoneContent").style.display = "block";
+    document.getElementById("fileInfoBox").style.display = "none";
+}
+
+function openUploadModal() {
+    document.getElementById("uploadDocForm").reset();
+    clearSelectedFile();
+    document.getElementById("uploadDocCategoryCustom").style.display = "none";
+    document.getElementById("uploadModal").style.display = "flex";
+}
+
+function closeUploadModal() {
+    document.getElementById("uploadModal").style.display = "none";
+}
+
+function onUploadCategoryChange() {
+    const sel = document.getElementById("uploadDocCategorySelect");
+    const custom = document.getElementById("uploadDocCategoryCustom");
+    if (sel.value === "__custom__") {
+        custom.style.display = "block";
+        custom.required = true;
+        custom.focus();
+    } else {
+        custom.style.display = "none";
+        custom.required = false;
+    }
+}
+
+async function handleUploadFile(e) {
+    e.preventDefault();
+    const fileInput = document.getElementById("fileInput");
+    if (!fileInput.files || fileInput.files.length === 0) {
+        showToast("Vui lòng chọn một file Word, PDF hoặc Markdown để tải lên", "error");
+        return;
+    }
+
+    const file = fileInput.files[0];
+    let category = document.getElementById("uploadDocCategorySelect").value;
+    if (category === "__custom__") {
+        category = document.getElementById("uploadDocCategoryCustom").value.trim() || "Chính sách chung";
+    }
+
+    const title = document.getElementById("uploadDocTitle").value.trim();
+
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("category", category);
+    if (title) formData.append("title", title);
+
+    const submitBtn = document.getElementById("uploadSubmitBtn");
+    const submitText = document.getElementById("uploadSubmitText");
+    submitBtn.disabled = true;
+    submitText.innerText = "Đang trích xuất văn bản & lưu trữ...";
+
+    try {
+        const token = localStorage.getItem("gearvn_token");
+        const headers = {};
+        if (token) headers["Authorization"] = `Bearer ${token}`;
+
+        const res = await fetch("/api/v1/rag/upload-file", {
+            method: "POST",
+            headers: headers,
+            body: formData
+        });
+
+        const data = await res.json();
+        if (res.ok) {
+            showToast("Tải lên và lưu tài liệu vào hệ thống thành công!");
+            closeUploadModal();
+            setTimeout(() => window.location.reload(), 700);
+        } else {
+            showToast(data.detail || "Lỗi khi xử lý file", "error");
+            submitBtn.disabled = false;
+            submitText.innerText = "Tải Lên & Lưu Trữ";
+        }
+    } catch (err) {
+        showToast("Lỗi kết nối máy chủ", "error");
+        submitBtn.disabled = false;
+        submitText.innerText = "Tải Lên & Lưu Trữ";
+    }
+}
+
+function openEditDocModal(id, title, category, content) {
+    document.getElementById("editModalDocId").value = id;
+    document.getElementById("editModalDocTitle").value = title;
+    document.getElementById("editModalDocCategory").value = category;
+    document.getElementById("editModalDocContent").value = content;
+    document.getElementById("editDocModal").style.display = "flex";
+}
+
+function closeEditDocModal() {
+    document.getElementById("editDocModal").style.display = "none";
+}
+
+async function handleSaveEditDoc(e) {
+    e.preventDefault();
+    const docId = document.getElementById("editModalDocId").value;
+    const title = document.getElementById("editModalDocTitle").value.trim();
+    const category = document.getElementById("editModalDocCategory").value.trim();
+    const content = document.getElementById("editModalDocContent").value.trim();
+
+    const token = localStorage.getItem("gearvn_token");
+    const headers = { "Content-Type": "application/json" };
+    if (token) headers["Authorization"] = `Bearer ${token}`;
+
+    try {
+        const res = await fetch(`/api/v1/rag/docs/${docId}`, {
+            method: "PUT",
+            headers: headers,
+            body: JSON.stringify({ title, category, content_text: content })
+        });
+        if (res.ok) {
+            showToast("Đã cập nhật nội dung tài liệu!");
+            closeEditDocModal();
+            setTimeout(() => window.location.reload(), 700);
+        } else {
+            showToast("Lỗi khi cập nhật tài liệu", "error");
+        }
+    } catch (err) {
+        showToast("Lỗi kết nối", "error");
+    }
+}
+
+async function deleteDoc(id, title) {
+    if (!confirm(`Bạn có chắc chắn muốn xóa tài liệu:\n"${title}" khỏi hệ thống?`)) return;
+    const token = localStorage.getItem("gearvn_token");
+    const headers = {};
+    if (token) headers["Authorization"] = `Bearer ${token}`;
+
+    try {
+        const res = await fetch(`/api/v1/rag/docs/${id}`, { method: "DELETE", headers: headers });
+        if (res.ok) {
+            showToast("Đã xóa tài liệu khỏi hệ thống!");
+            const card = document.getElementById(`doc-card-${id}`);
+            if (card) card.remove();
+            else setTimeout(() => window.location.reload(), 600);
+        } else {
+            showToast("Lỗi khi xóa tài liệu", "error");
+        }
+    } catch (err) {
+        showToast("Lỗi kết nối", "error");
+    }
+}
+
+function filterDocsBySpace(spaceName, element) {
+    currentActiveSpace = spaceName;
+    document.querySelectorAll(".category-pill").forEach(p => p.classList.remove("active"));
+    if (element) element.classList.add("active");
+
+    if (document.getElementById("ragQuerySpace")) {
+        document.getElementById("ragQuerySpace").value = spaceName;
+    }
+
+    filterDocsList();
+}
+
+function filterDocsList() {
+    const search = document.getElementById("docSearchInput").value.toLowerCase().trim();
+    const cards = document.querySelectorAll("#docListContainer .doc-card");
+    let visible = 0;
+
+    cards.forEach(card => {
+        const title = (card.getAttribute("data-title") || "").toLowerCase();
+        const category = (card.getAttribute("data-category") || "");
+        const content = (card.getAttribute("data-content") || "").toLowerCase();
+
+        const matchesSpace = (currentActiveSpace === "all" || category === currentActiveSpace);
+        const matchesSearch = !search || title.includes(search) || content.includes(search);
+
+        if (matchesSpace && matchesSearch) {
+            card.style.display = "block";
+            visible++;
+        } else {
+            card.style.display = "none";
+        }
+    });
+
+    document.getElementById("docCountHeader").innerText = visible;
+}
+
+async function promptClearSpace() {
+    const spaceToClear = currentActiveSpace === "all" ? 
+        prompt("Nhập chính xác tên Nhóm quy định cần xóa sạch (ví dụ: Chính sách bảo hành):") : 
+        currentActiveSpace;
+
+    if (!spaceToClear) return;
+    if (!confirm(`CẢNH BÁO: Toàn bộ tài liệu thuộc nhóm "${spaceToClear}" sẽ bị xóa vĩnh viễn khỏi hệ thống. Tiếp tục?`)) return;
+
+    const token = localStorage.getItem("gearvn_token");
+    const headers = {};
+    if (token) headers["Authorization"] = `Bearer ${token}`;
+
+    try {
+        const res = await fetch(`/api/v1/rag/spaces/${encodeURIComponent(spaceToClear)}`, {
+            method: "DELETE",
+            headers: headers
+        });
+        const data = await res.json();
+        if (res.ok) {
+            showToast(data.message || "Đã xóa danh mục tài liệu!");
+            setTimeout(() => window.location.reload(), 700);
+        } else {
+            showToast(data.detail || "Lỗi khi xóa", "error");
+        }
+    } catch (err) {
+        showToast("Lỗi kết nối", "error");
+    }
+}
+
+async function resetSampleDocs() {
+    if (!confirm("Bạn có muốn khôi phục lại các tài liệu quy trình mẫu chuẩn GearVN không?")) return;
+    const token = localStorage.getItem("gearvn_token");
+    const headers = {};
+    if (token) headers["Authorization"] = `Bearer ${token}`;
+
+    try {
+        const res = await fetch("/api/v1/rag/reset-sample-docs", { method: "POST", headers: headers });
+        if (res.ok) {
+            showToast("Đã khôi phục tài liệu mẫu thành công!");
+            setTimeout(() => window.location.reload(), 700);
+        } else {
+            showToast("Lỗi khi khôi phục", "error");
+        }
+    } catch (err) {
+        showToast("Lỗi kết nối", "error");
+    }
+}
+
+function quickRAG(q, space) {
+    document.getElementById("ragQuestionInput").value = q;
+    if (space) {
+        document.getElementById("ragQuerySpace").value = space;
+    }
+    Admin.askRAG();
+}
+</script>
+{% endblock %}

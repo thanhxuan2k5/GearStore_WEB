@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng Xuất Hệ Thống - GearVN</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        :root {
+            --primary: #e30019;
+            --primary-dark: #b80014;
+            --bg-dark: #0f172a;
+            --card-bg: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0b1120 0%, #0f172a 50%, #1e1b4b 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            color: var(--text-main);
+        }
+
+        .logout-card {
+            background: #ffffff;
+            width: 100%;
+            max-width: 460px;
+            border-radius: 16px;
+            padding: 40px 32px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.45);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .icon-circle {
+            width: 80px;
+            height: 80px;
+            background: #ecfdf5;
+            border: 2px solid #a7f3d0;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            color: #059669;
+            font-size: 34px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .brand-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: #fee2e2;
+            color: #dc2626;
+            font-size: 11px;
+            font-weight: 800;
+            padding: 4px 10px;
+            border-radius: 20px;
+            letter-spacing: 0.5px;
+            margin-bottom: 12px;
+        }
+
+        h1 {
+            font-size: 22px;
+            font-weight: 800;
+            color: #0f172a;
+            margin-bottom: 8px;
+        }
+
+        p {
+            font-size: 14px;
+            color: var(--text-muted);
+            line-height: 1.6;
+            margin-bottom: 24px;
+        }
+
+        .redirect-notice {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 12px;
+            font-size: 13px;
+            color: #475569;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .countdown-num {
+            font-weight: 800;
+            color: var(--primary);
+            font-size: 15px;
+        }
+
+        .btn-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 12px 20px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 700;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: none;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #e30019, #ff334b);
+            color: #ffffff;
+            box-shadow: 0 4px 14px rgba(227, 0, 25, 0.35);
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #b80014, #e30019);
+            transform: translateY(-1px);
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: #475569;
+            border: 1px solid #cbd5e1;
+        }
+
+        .btn-outline:hover {
+            background: #f1f5f9;
+            color: #0f172a;
+        }
+
+        .footer-text {
+            margin-top: 24px;
+            font-size: 12px;
+            color: #64748b;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="logout-card">
+        <div class="brand-badge">
+            <i class="fa-solid fa-gamepad"></i> GEARVN SYSTEM
+        </div>
+
+        <div class="icon-circle">
+            <i class="fa-solid fa-check"></i>
+        </div>
+
+        <h1>Đăng Xuất Thành Công!</h1>
+        <p>Phiên làm việc của bạn đã kết thúc an toàn. Toàn bộ thông tin xác thực trên trình duyệt đã được xóa sạch.</p>
+
+        <div class="redirect-notice">
+            <i class="fa-solid fa-spinner fa-spin" style="color:var(--primary);"></i>
+            <span>Tự động chuyển về trang Đăng nhập sau <span class="countdown-num" id="countdown">3</span>s...</span>
+        </div>
+
+        <div class="btn-group">
+            <a href="/login" class="btn btn-primary">
+                <i class="fa-solid fa-right-to-bracket"></i> Đăng Nhập Lại Ngay
+            </a>
+            <a href="/" class="btn btn-outline">
+                <i class="fa-solid fa-house"></i> Về Trang Chủ Cửa Hàng
+            </a>
+        </div>
+
+        <div class="footer-text">
+            © 2026 GearVN Tech Store & AI Assistant. All rights reserved.
+        </div>
+    </div>
+
+    <script>
+        // Xóa sạch toàn bộ token và user cache
+        try {
+            localStorage.removeItem("gearvn_token");
+            localStorage.removeItem("gearvn_user");
+            sessionStorage.clear();
+        } catch (e) {
+            console.error("Logout clear storage error:", e);
+        }
+
+        // Tự động chuyển hướng sau 3 giây
+        let seconds = 3;
+        const countdownEl = document.getElementById("countdown");
+        const interval = setInterval(() => {
+            seconds--;
+            if (countdownEl) countdownEl.innerText = seconds;
+            if (seconds <= 0) {
+                clearInterval(interval);
+                window.location.href = "/login";
+            }
+        }, 1000);
+    </script>
+
+</body>
+</html>

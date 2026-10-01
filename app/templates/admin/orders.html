@@ -1,0 +1,67 @@
+{% extends "admin/layout.html" %}
+
+{% block page_title %}Quản Lý Đơn Hàng & Cập Nhật Trạng Thái Giao Hàng{% endblock %}
+
+{% block content %}
+<div class="stat-card">
+    <div style="font-weight:700;font-size:16px;margin-bottom:16px;">Danh Sách Toàn Bộ Đơn Hàng ({{ orders|length }})</div>
+
+    <table style="width:100%;font-size:13px;border-collapse:collapse;text-align:left;">
+        <thead>
+            <tr style="background:#f8fafc;border-bottom:2px solid #e2e8f0;color:#64748b;">
+                <th style="padding:10px;">Mã đơn</th>
+                <th style="padding:10px;">Khách hàng</th>
+                <th style="padding:10px;">Số điện thoại</th>
+                <th style="padding:10px;">Tổng tiền</th>
+                <th style="padding:10px;">Thanh toán</th>
+                <th style="padding:10px;">Thời gian</th>
+                <th style="padding:10px;">Trạng thái</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for o in orders %}
+            <tr style="border-bottom:1px solid #f1f5f9;">
+                <td style="padding:10px;font-weight:700;color:var(--primary);">{{ o.order_code }}</td>
+                <td style="padding:10px;font-weight:600;">{{ o.customer_name }}</td>
+                <td style="padding:10px;">{{ o.customer_phone }}</td>
+                <td style="padding:10px;font-weight:700;color:var(--text-main);">{{ "{:,.0f}".format(o.final_amount) }} đ</td>
+                <td style="padding:10px;"><span style="text-transform:uppercase;font-size:11px;font-weight:700;background:#e2e8f0;padding:2px 6px;border-radius:4px;">{{ o.payment_method.value }}</span></td>
+                <td style="padding:10px;color:#64748b;font-size:12px;">{{ o.created_at.strftime('%d/%m/%Y %H:%M') }}</td>
+                <td style="padding:10px;">
+                    <select onchange="updateOrderStatus({{ o.id }}, this.value)" style="padding:4px 8px;border-radius:4px;font-size:12px;border:1px solid #cbd5e1;outline:none;">
+                        <option value="pending" {% if o.status.value == 'pending' %}selected{% endif %}>⏳ Chờ xác nhận</option>
+                        <option value="processing" {% if o.status.value == 'processing' %}selected{% endif %}>📦 Đang đóng gói</option>
+                        <option value="shipping" {% if o.status.value == 'shipping' %}selected{% endif %}>🚚 Đang giao hàng</option>
+                        <option value="completed" {% if o.status.value == 'completed' %}selected{% endif %}>✅ Đã giao thành công</option>
+                        <option value="cancelled" {% if o.status.value == 'cancelled' %}selected{% endif %}>❌ Đã hủy</option>
+                    </select>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="7" style="padding:20px;text-align:center;color:#94a3b8;">Chưa có đơn hàng nào phát sinh.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<script>
+async function updateOrderStatus(orderId, newStatus) {
+    try {
+        const res = await fetch(`/api/v1/orders/${orderId}/status`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ status: newStatus })
+        });
+        if (res.ok) {
+            showToast("Đã cập nhật trạng thái đơn hàng!");
+        } else {
+            showToast("Lỗi khi cập nhật trạng thái.", "error");
+        }
+    } catch (e) {
+        showToast("Lỗi kết nối", "error");
+    }
+}
+</script>
+{% endblock %}

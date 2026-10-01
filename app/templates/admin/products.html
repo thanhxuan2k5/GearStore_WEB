@@ -1,0 +1,542 @@
+{% extends "admin/layout.html" %}
+
+{% block page_title %}Quản Lý Sản Phẩm (Thêm / Sửa / Xóa Sản Phẩm){% endblock %}
+
+{% block head %}
+<style>
+    .admin-filter-bar {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        flex-wrap: wrap;
+        margin-bottom: 20px;
+        background: #fff;
+        padding: 14px 18px;
+        border-radius: 10px;
+        border: 1px solid #e2e8f0;
+    }
+    .admin-table-container {
+        background: #fff;
+        border-radius: 10px;
+        border: 1px solid #e2e8f0;
+        overflow-x: auto;
+        box-shadow: var(--shadow-sm);
+    }
+    .admin-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+        text-align: left;
+    }
+    .admin-table th {
+        background: #f8fafc;
+        padding: 12px 14px;
+        font-weight: 700;
+        color: #475569;
+        border-bottom: 2px solid #e2e8f0;
+        white-space: nowrap;
+    }
+    .admin-table td {
+        padding: 12px 14px;
+        border-bottom: 1px solid #f1f5f9;
+        vertical-align: middle;
+    }
+    .admin-table tr:hover {
+        background: #f8fafc;
+    }
+    .badge {
+        display: inline-block;
+        padding: 3px 8px;
+        border-radius: 4px;
+        font-size: 11px;
+        font-weight: 700;
+    }
+    .badge-flash {
+        background: #fee2e2;
+        color: #ef4444;
+    }
+    .badge-featured {
+        background: #fef3c7;
+        color: #d97706;
+    }
+    .badge-stock {
+        background: #ecfdf5;
+        color: #059669;
+    }
+    .badge-out {
+        background: #f3f4f6;
+        color: #9ca3af;
+    }
+    .form-group {
+        margin-bottom: 14px;
+    }
+    .form-group label {
+        display: block;
+        font-size: 12px;
+        font-weight: 700;
+        color: #334155;
+        margin-bottom: 4px;
+    }
+    .form-control {
+        width: 100%;
+        padding: 9px 12px;
+        border: 1px solid #cbd5e1;
+        border-radius: 6px;
+        font-size: 13px;
+        font-family: inherit;
+        outline: none;
+        transition: border-color 0.2s;
+    }
+    .form-control:focus {
+        border-color: var(--primary);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- FILTER & ACTION BAR -->
+<div class="admin-filter-bar">
+    <div style="flex: 1; min-width: 240px; position: relative;">
+        <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 12px; top: 12px; color: #94a3b8; font-size: 13px;"></i>
+        <input type="text" id="adminSearchInput" class="form-control" placeholder="Tìm kiếm theo tên, thương hiệu, ID..." style="padding-left: 36px;" oninput="filterAdminProducts()">
+    </div>
+
+    <div style="min-width: 180px;">
+        <select id="adminCatFilter" class="form-control" onchange="filterAdminProducts()">
+            <option value="">-- Tất cả danh mục --</option>
+            {% for c in categories %}
+            <option value="{{ c.name }}">{{ c.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <button class="btn btn-primary" onclick="openCreateProductModal()" style="display: flex; align-items: center; gap: 8px;">
+        <i class="fa-solid fa-plus"></i> Thêm Sản Phẩm Mới
+    </button>
+</div>
+
+<!-- PRODUCTS TABLE -->
+<div class="admin-table-container">
+    <div style="padding: 16px 20px; border-bottom: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: space-between;">
+        <div style="font-weight: 700; font-size: 15px; color: #1e293b;">
+            <i class="fa-solid fa-box-open" style="color: var(--primary); margin-right: 8px;"></i>
+            Danh Sách Toàn Bộ Sản Phẩm (<span id="totalProductCount">{{ products|length }}</span>)
+        </div>
+        <div style="font-size: 12px; color: #64748b;">
+            Bấm <b>"Sửa"</b> để chỉnh sửa thông tin/giá hoặc <b>"Xóa"</b> để xóa sản phẩm
+        </div>
+    </div>
+
+    <table class="admin-table" id="productTable">
+        <thead>
+            <tr>
+                <th style="width: 50px;">ID</th>
+                <th style="width: 60px;">Ảnh</th>
+                <th>Tên sản phẩm</th>
+                <th>Danh mục</th>
+                <th>Thương hiệu</th>
+                <th>Giá niêm yết</th>
+                <th>Giá khuyến mãi</th>
+                <th>Tồn kho</th>
+                <th>Đã bán</th>
+                <th>Loại PC</th>
+                <th>Trạng thái</th>
+                <th style="width: 140px; text-align: center;">Thao tác</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for p in products %}
+            <tr id="product-row-{{ p.id }}" data-id="{{ p.id }}" data-name="{{ p.name }}" data-brand="{{ p.brand }}" data-category="{{ p.category.name if p.category else '' }}">
+                <td style="font-weight: 700; color: #64748b;">#{{ p.id }}</td>
+                <td>
+                    <img src="{{ p.thumbnail or 'https://images.unsplash.com/photo-1603302576837-37561b2e2302?w=600' }}" alt="" style="width: 44px; height: 44px; object-fit: cover; border-radius: 6px; border: 1px solid #e2e8f0; background: #fff;" onerror="this.src='https://images.unsplash.com/photo-1603302576837-37561b2e2302?w=600'">
+                </td>
+                <td style="max-width: 260px;">
+                    <a href="/product/{{ p.slug }}" target="_blank" style="font-weight: 600; color: #0f172a; text-decoration: none;" title="{{ p.name }}">
+                        {{ p.name }}
+                    </a>
+                    <div style="font-size: 11px; color: #94a3b8; margin-top: 2px;"><code>{{ p.slug }}</code></div>
+                </td>
+                <td style="color: #475569; font-weight: 500;">{{ p.category.name if p.category else 'Chưa phân loại' }}</td>
+                <td style="font-weight: 600; color: #334155;">{{ p.brand }}</td>
+                <td style="color: #94a3b8; text-decoration: line-through;">{{ "{:,.0f}".format(p.original_price) }} đ</td>
+                <td style="color: var(--primary); font-weight: 700;">{{ "{:,.0f}".format(p.promo_price) }} đ</td>
+                <td>
+                    {% if p.stock_quantity > 0 %}
+                    <span class="badge badge-stock">{{ p.stock_quantity }} cái</span>
+                    {% else %}
+                    <span class="badge badge-out">Hết hàng</span>
+                    {% endif %}
+                </td>
+                <td style="color: #475569; font-weight: 600;">{{ p.sales_count }}</td>
+                <td>
+                    {% if p.pc_part_type %}
+                    <span style="background: #e0e7ff; color: #4338ca; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: 600;">{{ p.pc_part_type }}</span>
+                    {% else %}
+                    <span style="color: #cbd5e1;">-</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <div style="display: flex; gap: 4px; flex-direction: column;">
+                        {% if p.is_flash_sale %}
+                        <span class="badge badge-flash"><i class="fa-solid fa-bolt"></i> Flash Sale</span>
+                        {% endif %}
+                        {% if p.is_featured %}
+                        <span class="badge badge-featured"><i class="fa-solid fa-star"></i> Nổi bật</span>
+                        {% endif %}
+                    </div>
+                </td>
+                <td style="text-align: center;">
+                    <div style="display: flex; gap: 6px; justify-content: center;">
+                        <button class="btn btn-outline" style="padding: 5px 10px; font-size: 12px; color: #2563eb; border-color: #93c5fd; background: #eff6ff;" onclick="openEditProductModal({{ p.id }})" title="Chỉnh sửa sản phẩm">
+                            <i class="fa-solid fa-pen-to-square"></i> Sửa
+                        </button>
+                        <button class="btn btn-outline" style="padding: 5px 10px; font-size: 12px; color: #ef4444; border-color: #fca5a5; background: #fef2f2;" onclick="deleteProduct({{ p.id }}, '{{ p.name|replace("'", "\\'") }}')" title="Xóa sản phẩm">
+                            <i class="fa-solid fa-trash"></i> Xóa
+                        </button>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- UNIFIED CREATE / EDIT PRODUCT MODAL -->
+<div id="productModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.65); z-index: 99999; align-items: center; justify-content: center; backdrop-filter: blur(3px);">
+    <div style="background: #fff; border-radius: 12px; width: 720px; max-width: 95%; max-height: 92vh; overflow-y: auto; padding: 24px; box-shadow: var(--shadow-lg);">
+        
+        <!-- MODAL HEADER -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid #e2e8f0;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <div id="modalIconContainer" style="width: 36px; height: 36px; border-radius: 8px; background: #fee2e2; color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 16px;">
+                    <i class="fa-solid fa-box-open" id="modalIcon"></i>
+                </div>
+                <div>
+                    <h3 id="modalTitle" style="font-size: 17px; font-weight: 800; color: #0f172a; margin: 0;">Thêm Sản Phẩm Mới</h3>
+                    <div id="modalSubtitle" style="font-size: 12px; color: #64748b;">Điền đầy đủ thông tin sản phẩm công nghệ bên dưới</div>
+                </div>
+            </div>
+            <button onclick="closeProductModal()" style="border: none; background: #f1f5f9; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 15px; cursor: pointer; color: #64748b; transition: 0.2s;">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+
+        <!-- FORM -->
+        <form id="productForm" onsubmit="handleSaveProduct(event)">
+            <input type="hidden" id="pId" value="">
+
+            <div class="form-group">
+                <label>Tên sản phẩm <span style="color: #ef4444;">*</span></label>
+                <input type="text" id="pName" class="form-control" required placeholder="Ví dụ: Laptop Gaming ASUS ROG Strix G16 G614JVR..." oninput="autoGenerateSlug()">
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+                <div class="form-group">
+                    <label>Slug URL (Đường dẫn tĩnh) <span style="color: #ef4444;">*</span></label>
+                    <input type="text" id="pSlug" class="form-control" required placeholder="laptop-gaming-asus-rog-strix-g16">
+                </div>
+                <div class="form-group">
+                    <label>Danh mục sản phẩm <span style="color: #ef4444;">*</span></label>
+                    <select id="pCatId" class="form-control" required>
+                        {% for c in categories %}
+                        <option value="{{ c.id }}">{{ c.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+                <div class="form-group">
+                    <label>Thương hiệu (Brand) <span style="color: #ef4444;">*</span></label>
+                    <input type="text" id="pBrand" class="form-control" required placeholder="ASUS, Acer, MSI, Corsair, Intel, AMD, Kingston...">
+                </div>
+                <div class="form-group">
+                    <label>Loại linh kiện PC Builder (Nếu là linh kiện build máy)</label>
+                    <select id="pPcPartType" class="form-control">
+                        <option value="">-- Không phải linh kiện ráp PC riêng lẻ --</option>
+                        <option value="cpu">Vi xử lý (CPU)</option>
+                        <option value="mainboard">Bo mạch chủ (Mainboard)</option>
+                        <option value="ram">Bộ nhớ trong (RAM)</option>
+                        <option value="vga">Card màn hình (VGA / GPU)</option>
+                        <option value="storage">Ổ cứng (SSD / HDD)</option>
+                        <option value="psu">Nguồn máy tính (PSU)</option>
+                        <option value="case">Vỏ máy tính (Case)</option>
+                        <option value="cooler">Tản nhiệt (Cooler / AIO)</option>
+                        <option value="monitor">Màn hình máy tính (Monitor)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px;">
+                <div class="form-group">
+                    <label>Giá niêm yết (Gốc) VNĐ <span style="color: #ef4444;">*</span></label>
+                    <input type="number" id="pOrigPrice" class="form-control" required placeholder="25000000" min="0" step="1000">
+                </div>
+                <div class="form-group">
+                    <label>Giá khuyến mãi VNĐ <span style="color: #ef4444;">*</span></label>
+                    <input type="number" id="pPromoPrice" class="form-control" required placeholder="22990000" min="0" step="1000">
+                </div>
+                <div class="form-group">
+                    <label>Số lượng tồn kho <span style="color: #ef4444;">*</span></label>
+                    <input type="number" id="pStock" class="form-control" required placeholder="50" min="0" value="50">
+                </div>
+            </div>
+
+            <!-- THUMBNAIL & PREVIEW -->
+            <div class="form-group">
+                <label>Link hình ảnh Thumbnail (URL)</label>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <input type="url" id="pThumb" class="form-control" placeholder="https://images.unsplash.com/..." oninput="updateThumbPreview()">
+                    <div style="width: 44px; height: 44px; border: 1px solid #cbd5e1; border-radius: 6px; overflow: hidden; flex-shrink: 0; background: #f8fafc; display: flex; align-items: center; justify-content: center;">
+                        <img id="thumbPreview" src="https://images.unsplash.com/photo-1603302576837-37561b2e2302?w=600" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.src='https://images.unsplash.com/photo-1603302576837-37561b2e2302?w=600'">
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Mô tả ngắn gọn (Hiển thị thẻ tóm tắt)</label>
+                <textarea id="pShortDesc" rows="2" class="form-control" placeholder="Tóm tắt những ưu điểm nổi bật nhất của sản phẩm..."></textarea>
+            </div>
+
+            <div class="form-group">
+                <label>Thông số kỹ thuật GearVN (JSON Specs)</label>
+                <textarea id="pSpecsJson" rows="3" class="form-control" style="font-family: monospace; font-size: 12px;" placeholder='{"cpu": "Core i7-14700HX", "gpu": "RTX 4070 8GB", "ram": "16GB DDR5", "storage": "1TB SSD", "screen": "16 inch 2.5K 165Hz", "socket": "LGA1700", "wattage": 750}'></textarea>
+                <div style="font-size: 11px; color: #64748b; margin-top: 3px;">Hỗ trợ AI Trợ Lý & PC Builder tương thích tự động khi có các trường: <code>cpu</code>, <code>gpu</code>, <code>ram</code>, <code>socket</code>, <code>wattage</code>...</div>
+            </div>
+
+            <!-- CHECKBOX FLAGS -->
+            <div style="display: flex; gap: 24px; margin: 16px 0; background: #f8fafc; padding: 12px 16px; border-radius: 8px; border: 1px solid #e2e8f0;">
+                <label style="display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; cursor: pointer; color: #ef4444;">
+                    <input type="checkbox" id="pFlashSale" style="width: 16px; height: 16px; accent-color: #ef4444;">
+                    <i class="fa-solid fa-bolt"></i> Bật Flash Sale
+                </label>
+                <label style="display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; cursor: pointer; color: #d97706;">
+                    <input type="checkbox" id="pFeatured" style="width: 16px; height: 16px; accent-color: #d97706;">
+                    <i class="fa-solid fa-star"></i> Sản phẩm Nổi bật
+                </label>
+                <label style="display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; cursor: pointer; color: #2563eb;">
+                    <input type="checkbox" id="pBestSeller" style="width: 16px; height: 16px; accent-color: #2563eb;">
+                    <i class="fa-solid fa-fire"></i> Bán chạy
+                </label>
+            </div>
+
+            <!-- BUTTON ACTIONS -->
+            <div style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 20px;">
+                <button type="button" class="btn btn-outline" onclick="closeProductModal()" style="padding: 10px 20px;">
+                    Hủy bỏ
+                </button>
+                <button type="submit" id="saveBtn" class="btn btn-primary" style="padding: 10px 24px;">
+                    <i class="fa-solid fa-floppy-disk"></i> <span id="saveBtnText">Lưu & Đăng Sản Phẩm</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+let currentEditingId = null;
+
+function autoGenerateSlug() {
+    if (currentEditingId) return; // Don't overwrite slug when editing existing product
+    const name = document.getElementById("pName").value;
+    const slug = name.toLowerCase()
+        .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+        .replace(/đ/g, "d").replace(/Đ/g, "d")
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/(^-|-$)/g, '');
+    document.getElementById("pSlug").value = slug;
+}
+
+function updateThumbPreview() {
+    const url = document.getElementById("pThumb").value.trim();
+    const preview = document.getElementById("thumbPreview");
+    if (url) {
+        preview.src = url;
+    } else {
+        preview.src = "https://images.unsplash.com/photo-1603302576837-37561b2e2302?w=600";
+    }
+}
+
+function openCreateProductModal() {
+    currentEditingId = null;
+    document.getElementById("productForm").reset();
+    document.getElementById("pId").value = "";
+    document.getElementById("modalTitle").innerText = "Thêm Sản Phẩm Mới";
+    document.getElementById("modalSubtitle").innerText = "Điền thông tin để đăng sản phẩm mới lên cửa hàng GearVN";
+    document.getElementById("modalIcon").className = "fa-solid fa-plus";
+    document.getElementById("modalIconContainer").style.background = "#fee2e2";
+    document.getElementById("modalIconContainer").style.color = "var(--primary)";
+    document.getElementById("saveBtnText").innerText = "Tạo & Đăng Sản Phẩm";
+    document.getElementById("pSpecsJson").value = '{"cpu": "", "gpu": "", "ram": "", "storage": ""}';
+    document.getElementById("pStock").value = 50;
+    updateThumbPreview();
+    document.getElementById("productModal").style.display = "flex";
+}
+
+async function openEditProductModal(productId) {
+    currentEditingId = productId;
+    document.getElementById("modalTitle").innerText = `Chỉnh Sửa Sản Phẩm #${productId}`;
+    document.getElementById("modalSubtitle").innerText = "Cập nhật giá, thông số, tồn kho hoặc hình ảnh sản phẩm";
+    document.getElementById("modalIcon").className = "fa-solid fa-pen-to-square";
+    document.getElementById("modalIconContainer").style.background = "#eff6ff";
+    document.getElementById("modalIconContainer").style.color = "#2563eb";
+    document.getElementById("saveBtnText").innerText = "Lưu Thay Đổi";
+
+    try {
+        const token = localStorage.getItem("gearvn_token");
+        const headers = token ? { "Authorization": `Bearer ${token}` } : {};
+        const res = await fetch(`/api/v1/products/${productId}`, { headers });
+        
+        if (!res.ok) {
+            showToast("Không tìm thấy thông tin sản phẩm", "error");
+            return;
+        }
+
+        const p = await res.json();
+        document.getElementById("pId").value = p.id;
+        document.getElementById("pName").value = p.name || "";
+        document.getElementById("pSlug").value = p.slug || "";
+        document.getElementById("pCatId").value = p.category_id || "";
+        document.getElementById("pBrand").value = p.brand || "";
+        document.getElementById("pPcPartType").value = p.pc_part_type || "";
+        document.getElementById("pOrigPrice").value = p.original_price || 0;
+        document.getElementById("pPromoPrice").value = p.promo_price || 0;
+        document.getElementById("pStock").value = p.stock_quantity ?? 50;
+        document.getElementById("pThumb").value = p.thumbnail || "";
+        document.getElementById("pShortDesc").value = p.short_desc || "";
+        document.getElementById("pSpecsJson").value = p.specs_json || "{}";
+        document.getElementById("pFlashSale").checked = !!p.is_flash_sale;
+        document.getElementById("pFeatured").checked = !!p.is_featured;
+        document.getElementById("pBestSeller").checked = !!p.is_best_seller;
+
+        updateThumbPreview();
+        document.getElementById("productModal").style.display = "flex";
+    } catch (err) {
+        console.error("Error fetching product details:", err);
+        showToast("Lỗi khi tải thông tin sản phẩm", "error");
+    }
+}
+
+function closeProductModal() {
+    document.getElementById("productModal").style.display = "none";
+}
+
+async function handleSaveProduct(e) {
+    e.preventDefault();
+    const token = localStorage.getItem("gearvn_token");
+    const headers = { "Content-Type": "application/json" };
+    if (token) headers["Authorization"] = `Bearer ${token}`;
+
+    const pId = document.getElementById("pId").value;
+    const name = document.getElementById("pName").value.trim();
+    let slug = document.getElementById("pSlug").value.trim();
+    if (!slug) {
+        slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') + '-' + Math.floor(Math.random()*1000);
+    }
+
+    const payload = {
+        name: name,
+        slug: slug,
+        category_id: parseInt(document.getElementById("pCatId").value),
+        brand: document.getElementById("pBrand").value.trim(),
+        pc_part_type: document.getElementById("pPcPartType").value || null,
+        original_price: parseFloat(document.getElementById("pOrigPrice").value),
+        promo_price: parseFloat(document.getElementById("pPromoPrice").value),
+        stock_quantity: parseInt(document.getElementById("pStock").value) || 0,
+        thumbnail: document.getElementById("pThumb").value.trim() || "https://images.unsplash.com/photo-1603302576837-37561b2e2302?w=600",
+        short_desc: document.getElementById("pShortDesc").value.trim(),
+        specs_json: document.getElementById("pSpecsJson").value.trim() || "{}",
+        is_flash_sale: document.getElementById("pFlashSale").checked,
+        is_featured: document.getElementById("pFeatured").checked,
+        is_best_seller: document.getElementById("pBestSeller").checked
+    };
+
+    const isEdit = !!pId;
+    const url = isEdit ? `/api/v1/products/${pId}` : "/api/v1/products/";
+    const method = isEdit ? "PUT" : "POST";
+
+    try {
+        const res = await fetch(url, {
+            method: method,
+            headers: headers,
+            body: JSON.stringify(payload)
+        });
+
+        const data = await res.json();
+        if (res.ok) {
+            showToast(isEdit ? "Cập nhật sản phẩm thành công!" : "Thêm sản phẩm thành công!");
+            closeProductModal();
+            setTimeout(() => window.location.reload(), 700);
+        } else {
+            const errDetail = data.detail ? (typeof data.detail === 'string' ? data.detail : JSON.stringify(data.detail)) : "Có lỗi xảy ra";
+            showToast("Lỗi: " + errDetail, "error");
+        }
+    } catch (err) {
+        console.error("Save product error:", err);
+        showToast("Lỗi kết nối máy chủ", "error");
+    }
+}
+
+async function deleteProduct(id, name) {
+    if (!confirm(`Bạn có chắc chắn muốn xóa sản phẩm:\n"${name}" (ID #${id}) không?`)) {
+        return;
+    }
+
+    const token = localStorage.getItem("gearvn_token");
+    const headers = {};
+    if (token) headers["Authorization"] = `Bearer ${token}`;
+
+    try {
+        const res = await fetch(`/api/v1/products/${id}`, {
+            method: "DELETE",
+            headers: headers
+        });
+
+        if (res.ok) {
+            showToast("Đã xóa sản phẩm thành công!");
+            const row = document.getElementById(`product-row-${id}`);
+            if (row) {
+                row.remove();
+                const currentCount = parseInt(document.getElementById("totalProductCount").innerText) || 1;
+                document.getElementById("totalProductCount").innerText = Math.max(0, currentCount - 1);
+            } else {
+                setTimeout(() => window.location.reload(), 600);
+            }
+        } else {
+            const data = await res.json();
+            showToast(data.detail || "Lỗi khi xóa sản phẩm", "error");
+        }
+    } catch (err) {
+        console.error("Delete product error:", err);
+        showToast("Lỗi kết nối máy chủ", "error");
+    }
+}
+
+function filterAdminProducts() {
+    const search = document.getElementById("adminSearchInput").value.toLowerCase().trim();
+    const cat = document.getElementById("adminCatFilter").value.toLowerCase().trim();
+    const rows = document.querySelectorAll("#productTable tbody tr");
+    let count = 0;
+
+    rows.forEach(row => {
+        const name = (row.getAttribute("data-name") || "").toLowerCase();
+        const brand = (row.getAttribute("data-brand") || "").toLowerCase();
+        const id = (row.getAttribute("data-id") || "").toLowerCase();
+        const category = (row.getAttribute("data-category") || "").toLowerCase();
+
+        const matchesSearch = !search || name.includes(search) || brand.includes(search) || id.includes(search);
+        const matchesCat = !cat || category.includes(cat);
+
+        if (matchesSearch && matchesCat) {
+            row.style.display = "";
+            count++;
+        } else {
+            row.style.display = "none";
+        }
+    });
+
+    document.getElementById("totalProductCount").innerText = count;
+}
+</script>
+{% endblock %}

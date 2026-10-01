@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block title %}Đặt Hàng Thành Công - GearVN{% endblock %}
+
+{% block content %}
+<div class="container" style="margin-top:40px;margin-bottom:60px;max-width:650px;">
+    <div style="background:#fff;border-radius:12px;border:1px solid var(--border-color);padding:36px;text-align:center;box-shadow:var(--shadow-md);">
+        <div style="width:70px;height:70px;background:#d1fae5;color:#10b981;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:32px;margin:0 auto 16px;">
+            <i class="fa-solid fa-check"></i>
+        </div>
+        <h1 style="font-size:22px;font-weight:800;color:var(--text-main);margin-bottom:8px;">ĐẶT HÀNG THÀNH CÔNG!</h1>
+        <p style="font-size:14px;color:#64748b;margin-bottom:20px;">Cảm ơn quý khách đã tin tưởng mua sắm tại hệ thống bán lẻ công nghệ GearVN.</p>
+        
+        <div style="background:#f8fafc;border:1px dashed #cbd5e1;border-radius:8px;padding:16px;margin-bottom:24px;text-align:left;font-size:13px;">
+            <div style="margin-bottom:6px;"><strong>Mã đơn hàng:</strong> <span style="color:var(--primary);font-weight:700;">{{ order.order_code }}</span></div>
+            <div style="margin-bottom:6px;"><strong>Người nhận:</strong> {{ order.customer_name }} ({{ order.customer_phone }})</div>
+            <div style="margin-bottom:6px;"><strong>Địa chỉ giao:</strong> {{ order.shipping_address }}</div>
+            <div style="margin-bottom:6px;"><strong>Tổng thanh toán:</strong> <span style="font-weight:800;color:var(--primary);">{{ "{:,.0f}".format(order.final_amount) }} đ</span></div>
+            <div><strong>Trạng thái:</strong> <span style="color:#f59e0b;font-weight:600;">Chờ nhân viên GearVN gọi xác nhận</span></div>
+        </div>
+
+        <div style="display:flex;gap:12px;justify-content:center;">
+            <a href="/" class="btn btn-primary" style="padding:10px 24px;"><i class="fa-solid fa-store"></i> Tiếp tục mua sắm</a>
+            <a href="/admin/dashboard" class="btn btn-outline" style="padding:10px 20px;"><i class="fa-solid fa-chart-line"></i> Xem trên Admin Dashboard</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,169 @@
+{% extends "base.html" %}
+
+{% block title %}Tài Khoản Cá Nhân & Đổi Mật Khẩu - GearVN{% endblock %}
+
+{% block content %}
+<div class="container" style="margin-top:30px;margin-bottom:60px;">
+    
+    <!-- Breadcrumb -->
+    <div style="font-size:12px;color:#6b7280;margin-bottom:16px;">
+        <a href="/">Trang chủ</a> &gt; <span style="color:#111;font-weight:600;">Thông tin tài khoản & Đổi mật khẩu</span>
+    </div>
+
+    <div style="display:grid;grid-template-columns:300px 1fr;gap:24px;">
+        
+        <!-- User Sidebar Card -->
+        <div style="background:#fff;border-radius:var(--radius);border:1px solid var(--border-color);padding:24px;height:fit-content;">
+            <div style="text-align:center;padding-bottom:16px;border-bottom:1px solid #f1f5f9;margin-bottom:16px;">
+                <div style="width:70px;height:70px;border-radius:50%;background:#fee2e2;color:var(--primary);display:flex;align-items:center;justify-content:center;font-size:30px;margin:0 auto 12px;font-weight:bold;">
+                    <i class="fa-solid fa-user"></i>
+                </div>
+                <div style="font-weight:800;font-size:16px;" id="profileDisplayName">Khách Hàng GearVN</div>
+                <div style="font-size:12px;color:#64748b;" id="profileDisplayEmail">customer@gmail.com</div>
+                <span id="profileDisplayRole" style="display:inline-block;margin-top:6px;font-size:11px;font-weight:700;background:#dbeafe;color:#1d4ed8;padding:2px 8px;border-radius:10px;text-transform:uppercase;">CUSTOMER</span>
+            </div>
+
+            <div style="display:flex;flex-direction:column;gap:8px;">
+                <button class="btn btn-outline" style="justify-content:flex-start;color:#ef4444;" onclick="handleLogout()">
+                    <i class="fa-solid fa-right-from-bracket"></i> Đăng xuất tài khoản
+                </button>
+            </div>
+        </div>
+
+        <!-- Main Account Content -->
+        <div style="display:flex;flex-direction:column;gap:24px;">
+            
+            <!-- 1. Change Password Form Card -->
+            <div style="background:#fff;border-radius:var(--radius);border:1px solid var(--border-color);padding:24px;">
+                <h2 style="font-size:16px;font-weight:700;margin-bottom:16px;border-bottom:2px solid #f0f0f0;padding-bottom:8px;display:flex;align-items:center;gap:8px;">
+                    <i class="fa-solid fa-key" style="color:var(--primary);"></i> Đổi Mật Khẩu
+                </h2>
+
+                <form id="changePasswordForm" onsubmit="handleChangePassword(event)" style="max-width:450px;">
+                    <div style="margin-bottom:12px;">
+                        <label style="font-size:13px;font-weight:600;display:block;margin-bottom:6px;">Mật khẩu hiện tại *</label>
+                        <input type="password" id="oldPassword" required placeholder="Nhập mật khẩu cũ..." style="width:100%;padding:8px 12px;border:1px solid #cbd5e1;border-radius:6px;font-size:13px;outline:none;">
+                    </div>
+
+                    <div style="margin-bottom:12px;">
+                        <label style="font-size:13px;font-weight:600;display:block;margin-bottom:6px;">Mật khẩu mới (Tối thiểu 6 ký tự) *</label>
+                        <input type="password" id="newPassword" required minlength="6" placeholder="Nhập mật khẩu mới..." style="width:100%;padding:8px 12px;border:1px solid #cbd5e1;border-radius:6px;font-size:13px;outline:none;">
+                    </div>
+
+                    <div style="margin-bottom:16px;">
+                        <label style="font-size:13px;font-weight:600;display:block;margin-bottom:6px;">Xác nhận mật khẩu mới *</label>
+                        <input type="password" id="confirmNewPassword" required minlength="6" placeholder="Nhập lại mật khẩu mới..." style="width:100%;padding:8px 12px;border:1px solid #cbd5e1;border-radius:6px;font-size:13px;outline:none;">
+                    </div>
+
+                    <button type="submit" class="btn btn-primary" style="padding:10px 20px;">
+                        <i class="fa-solid fa-shield-check"></i> Cập nhật Mật khẩu
+                    </button>
+                </form>
+            </div>
+
+            <!-- 2. Account Information Details -->
+            <div style="background:#fff;border-radius:var(--radius);border:1px solid var(--border-color);padding:24px;">
+                <h2 style="font-size:16px;font-weight:700;margin-bottom:16px;border-bottom:2px solid #f0f0f0;padding-bottom:8px;display:flex;align-items:center;gap:8px;">
+                    <i class="fa-solid fa-address-card" style="color:#3b82f6;"></i> Thông Tin Cá Nhân
+                </h2>
+
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;font-size:13px;">
+                    <div>
+                        <span style="color:#64748b;">Họ và tên:</span>
+                        <strong style="display:block;margin-top:2px;" id="infoName">Đang tải...</strong>
+                    </div>
+                    <div>
+                        <span style="color:#64748b;">Email tài khoản:</span>
+                        <strong style="display:block;margin-top:2px;" id="infoEmail">Đang tải...</strong>
+                    </div>
+                    <div>
+                        <span style="color:#64748b;">Số điện thoại:</span>
+                        <strong style="display:block;margin-top:2px;" id="infoPhone">Chưa cập nhật</strong>
+                    </div>
+                    <div>
+                        <span style="color:#64748b;">Địa chỉ giao hàng mặc định:</span>
+                        <strong style="display:block;margin-top:2px;" id="infoAddress">Chưa cập nhật</strong>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+</div>
+
+<script>
+async function loadUserProfile() {
+    const token = localStorage.getItem("gearvn_token");
+    if (!token) {
+        window.location.href = "/login";
+        return;
+    }
+
+    try {
+        const res = await fetch("/api/v1/auth/me", {
+            headers: { "Authorization": `Bearer ${token}` }
+        });
+
+        if (res.ok) {
+            const user = await res.json();
+            document.getElementById("profileDisplayName").innerText = user.full_name;
+            document.getElementById("profileDisplayEmail").innerText = user.email;
+            document.getElementById("profileDisplayRole").innerText = user.role.toUpperCase();
+            document.getElementById("infoName").innerText = user.full_name;
+            document.getElementById("infoEmail").innerText = user.email;
+            document.getElementById("infoPhone").innerText = user.phone || "Chưa cập nhật";
+            document.getElementById("infoAddress").innerText = user.address || "Chưa cập nhật";
+        } else {
+            localStorage.removeItem("gearvn_token");
+            window.location.href = "/login";
+        }
+    } catch (e) {
+        showToast("Lỗi tải thông tin tài khoản", "error");
+    }
+}
+
+async function handleChangePassword(e) {
+    e.preventDefault();
+    const oldPass = document.getElementById("oldPassword").value;
+    const newPass = document.getElementById("newPassword").value;
+    const confirmPass = document.getElementById("confirmNewPassword").value;
+
+    if (newPass !== confirmPass) {
+        showToast("Xác nhận mật khẩu mới không khớp!", "error");
+        return;
+    }
+
+    const token = localStorage.getItem("gearvn_token");
+    try {
+        const res = await fetch("/api/v1/auth/change-password", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
+            },
+            body: JSON.stringify({ old_password: oldPass, new_password: newPass })
+        });
+
+        if (res.ok) {
+            showToast("Đổi mật khẩu thành công!");
+            document.getElementById("changePasswordForm").reset();
+        } else {
+            const err = await res.json();
+            showToast(err.detail || "Đổi mật khẩu thất bại", "error");
+        }
+    } catch (err) {
+        showToast("Lỗi kết nối máy chủ", "error");
+    }
+}
+
+function handleLogout() {
+    localStorage.removeItem("gearvn_token");
+    localStorage.removeItem("gearvn_user");
+    showToast("Đã đăng xuất thành công");
+    setTimeout(() => window.location.href = "/", 600);
+}
+
+document.addEventListener("DOMContentLoaded", loadUserProfile);
+</script>
+{% endblock %}

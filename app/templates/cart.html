@@ -1,0 +1,199 @@
+{% extends "base.html" %}
+
+{% block title %}Giỏ Hàng & Thanh Toán - GearVN{% endblock %}
+
+{% block content %}
+<div class="container" style="margin-top:20px;">
+
+    <!-- Breadcrumb -->
+    <div style="font-size:12px;color:#6b7280;margin-bottom:16px;">
+        <a href="/">Trang chủ</a> &gt; <span style="color:#111;font-weight:600;">Giỏ hàng & Đặt hàng</span>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 420px;gap:24px;margin-bottom:40px;">
+        
+        <!-- Cart Items List -->
+        <div style="background:#fff;border-radius:var(--radius);border:1px solid var(--border-color);padding:24px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;border-bottom:2px solid #f0f0f0;padding-bottom:12px;margin-bottom:16px;">
+                <h1 style="font-size:18px;font-weight:700;">Giỏ Hàng Của Bạn (<span id="cartCountTotal">0</span> sản phẩm)</h1>
+                <button class="btn btn-outline" style="font-size:12px;color:red;" onclick="Cart.clear(); renderCart();">
+                    <i class="fa-solid fa-trash"></i> Xóa tất cả
+                </button>
+            </div>
+
+            <div id="cartItemsContainer" style="display:flex;flex-direction:column;gap:16px;">
+                <!-- Rendered dynamically -->
+            </div>
+        </div>
+
+        <!-- Checkout Form & Summary -->
+        <div style="background:#fff;border-radius:var(--radius);border:1px solid var(--border-color);padding:24px;height:fit-content;position:sticky;top:80px;">
+            <h2 style="font-size:16px;font-weight:700;margin-bottom:16px;border-bottom:2px solid #f0f0f0;padding-bottom:8px;">Thông Tin Giao Hàng</h2>
+
+            <form id="checkoutForm" onsubmit="handleCheckout(event)">
+                <div style="margin-bottom:12px;">
+                    <label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px;">Họ và tên người nhận *</label>
+                    <input type="text" id="custName" required placeholder="Ví dụ: Nguyễn Văn A" style="width:100%;padding:8px 12px;border:1px solid #cbd5e1;border-radius:6px;font-size:13px;">
+                </div>
+
+                <div style="margin-bottom:12px;">
+                    <label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px;">Số điện thoại *</label>
+                    <input type="tel" id="custPhone" required placeholder="Ví dụ: 0901234567" style="width:100%;padding:8px 12px;border:1px solid #cbd5e1;border-radius:6px;font-size:13px;">
+                </div>
+
+                <div style="margin-bottom:12px;">
+                    <label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px;">Email nhận hóa đơn</label>
+                    <input type="email" id="custEmail" placeholder="email@example.com" style="width:100%;padding:8px 12px;border:1px solid #cbd5e1;border-radius:6px;font-size:13px;">
+                </div>
+
+                <div style="margin-bottom:12px;">
+                    <label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px;">Địa chỉ giao hàng chi tiết *</label>
+                    <textarea id="custAddress" required rows="2" placeholder="Số nhà, tên đường, phường/xã, quận/huyện, TP..." style="width:100%;padding:8px 12px;border:1px solid #cbd5e1;border-radius:6px;font-size:13px;"></textarea>
+                </div>
+
+                <div style="margin-bottom:16px;">
+                    <label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px;">Phương thức thanh toán</label>
+                    <select id="custPayment" style="width:100%;padding:8px 12px;border:1px solid #cbd5e1;border-radius:6px;font-size:13px;">
+                        <option value="cod">Thanh toán khi nhận hàng (COD)</option>
+                        <option value="bank">Chuyển khoản QR Ngân hàng</option>
+                        <option value="vnpay">Cổng thanh toán VNPAY / Momo</option>
+                    </select>
+                </div>
+
+                <div style="border-top:1px solid #eee;padding-top:14px;margin-bottom:16px;">
+                    <div style="display:flex;justify-content:space-between;font-size:14px;margin-bottom:6px;">
+                        <span style="color:#64748b;">Tạm tính:</span>
+                        <span id="summarySubtotal" style="font-weight:600;">0 đ</span>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;font-size:14px;margin-bottom:6px;">
+                        <span style="color:#64748b;">Phí vận chuyển:</span>
+                        <span style="color:#10b981;font-weight:600;">Miễn phí (Toàn quốc)</span>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;font-size:16px;font-weight:800;color:var(--primary);margin-top:10px;">
+                        <span>TỔNG CỘNG:</span>
+                        <span id="summaryTotal">0 đ</span>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="width:100%;padding:14px;font-size:15px;background:linear-gradient(135deg, #e30019, #ff5252);">
+                    <i class="fa-solid fa-lock"></i> XÁC NHẬN ĐẶT HÀNG NGAY
+                </button>
+            </form>
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+function renderCart() {
+    const items = Cart.getItems();
+    const container = document.getElementById("cartItemsContainer");
+    const countEl = document.getElementById("cartCountTotal");
+    const subtotalEl = document.getElementById("summarySubtotal");
+    const totalEl = document.getElementById("summaryTotal");
+
+    if (countEl) countEl.innerText = Cart.getCount();
+
+    if (!items || items.length === 0) {
+        container.innerHTML = `
+            <div style="text-align:center;padding:40px;">
+                <i class="fa-solid fa-cart-arrow-down" style="font-size:48px;color:#cbd5e1;margin-bottom:12px;"></i>
+                <p style="color:#64748b;">Giỏ hàng của bạn đang trống.</p>
+                <a href="/" class="btn btn-primary" style="margin-top:14px;"><i class="fa-solid fa-store"></i> Tiếp tục mua sắm</a>
+            </div>
+        `;
+        if (subtotalEl) subtotalEl.innerText = "0 đ";
+        if (totalEl) totalEl.innerText = "0 đ";
+        return;
+    }
+
+    container.innerHTML = items.map(item => `
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:12px;border:1px solid #f1f5f9;border-radius:8px;">
+            <div style="display:flex;align-items:center;gap:14px;">
+                <img src="${item.thumbnail || 'https://via.placeholder.com/60'}" style="width:60px;height:60px;object-fit:cover;border-radius:6px;">
+                <div>
+                    <div style="font-weight:700;font-size:13px;max-width:320px;">${item.name}</div>
+                    <div style="color:var(--primary);font-weight:700;font-size:14px;margin-top:2px;">${item.promo_price.toLocaleString()} đ</div>
+                </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;">
+                <div style="display:flex;align-items:center;border:1px solid #cbd5e1;border-radius:4px;overflow:hidden;">
+                    <button style="border:none;background:#f8fafc;padding:4px 10px;cursor:pointer;" onclick="Cart.updateQuantity(${item.id}, ${item.quantity - 1}); renderCart();">-</button>
+                    <span style="padding:4px 12px;font-size:13px;font-weight:600;">${item.quantity}</span>
+                    <button style="border:none;background:#f8fafc;padding:4px 10px;cursor:pointer;" onclick="Cart.updateQuantity(${item.id}, ${item.quantity + 1}); renderCart();">+</button>
+                </div>
+                <button style="border:none;background:transparent;color:#ef4444;cursor:pointer;font-size:14px;" onclick="Cart.removeItem(${item.id}); renderCart();">
+                    <i class="fa-solid fa-trash"></i>
+                </button>
+            </div>
+        </div>
+    `).join("");
+
+    const total = Cart.getTotal();
+    if (subtotalEl) subtotalEl.innerText = `${total.toLocaleString()} đ`;
+    if (totalEl) totalEl.innerText = `${total.toLocaleString()} đ`;
+}
+
+async function handleCheckout(e) {
+    e.preventDefault();
+    const token = localStorage.getItem("gearvn_token");
+    if (!token) {
+        showToast("Vui lòng đăng nhập tài khoản để đặt hàng!", "error");
+        sessionStorage.setItem("gearvn_redirect_after_login", window.location.href);
+        setTimeout(() => window.location.href = "/login", 800);
+        return;
+    }
+
+    const items = Cart.getItems();
+    if (items.length === 0) {
+        showToast("Giỏ hàng của bạn đang trống!", "error");
+        return;
+    }
+
+    const payload = {
+        customer_name: document.getElementById("custName").value,
+        customer_phone: document.getElementById("custPhone").value,
+        customer_email: document.getElementById("custEmail").value || null,
+        shipping_address: document.getElementById("custAddress").value,
+        payment_method: document.getElementById("custPayment").value,
+        items: items.map(i => ({ product_id: i.id, quantity: i.quantity }))
+    };
+
+    try {
+        const res = await fetch("/api/v1/orders/", {
+            method: "POST",
+            headers: { 
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
+            },
+            body: JSON.stringify(payload)
+        });
+
+        if (res.ok) {
+            const order = await res.json();
+            Cart.clear();
+            window.location.href = `/order-success?order_code=${order.order_code}`;
+        } else {
+            const err = await res.json();
+            showToast(err.detail || "Không thể tạo đơn hàng", "error");
+        }
+    } catch (err) {
+        showToast("Lỗi kết nối khi gửi đơn hàng.", "error");
+    }
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    renderCart();
+    try {
+        const userStr = localStorage.getItem("gearvn_user");
+        if (userStr) {
+            const user = JSON.parse(userStr);
+            if (user.full_name && document.getElementById("custName")) document.getElementById("custName").value = user.full_name;
+            if (user.phone && document.getElementById("custPhone")) document.getElementById("custPhone").value = user.phone;
+            if (user.email && document.getElementById("custEmail")) document.getElementById("custEmail").value = user.email;
+        }
+    } catch(e) {}
+});
+</script>
+{% endblock %}

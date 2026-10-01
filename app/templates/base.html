@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}GearVN - Hi-End PC, Laptop Gaming & Công Nghệ Hàng Đầu{% endblock %}</title>
+    <!-- FontAwesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/static/css/style.css">
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+    </style>
+    {% block head %}{% endblock %}
+</head>
+<body>
+
+    <!-- TOP HEADER -->
+    <header class="top-header">
+        <div class="container header-inner">
+            <!-- Brand Logo -->
+            <a href="/" class="brand-logo">
+                <i class="fa-solid fa-gamepad" style="color:var(--primary);"></i>
+                <span>GEAR<span style="color:var(--primary);">VN</span></span>
+                <span class="logo-badge">TECH</span>
+            </a>
+
+            <!-- Search Form -->
+            <div class="search-wrapper">
+                <form action="/products" method="GET" class="search-form">
+                    <input type="text" name="search" class="search-input" placeholder="Bạn cần tìm linh kiện, laptop gaming hay PC?..." value="{{ search_query or '' }}">
+                    <button type="submit" class="search-btn">
+                        <i class="fa-solid fa-magnifying-glass"></i> Tìm kiếm
+                    </button>
+                </form>
+            </div>
+
+            <!-- Header Actions -->
+            <div class="header-actions">
+                <a href="/pc-builder" class="action-btn" style="background:#e30019;">
+                    <i class="fa-solid fa-screwdriver-wrench"></i>
+                    <span>Xây Dựng PC</span>
+                </a>
+
+                <!-- User Account Dynamic Section -->
+                <div id="headerAuthSection">
+                    <a href="/login" class="action-btn" id="loginBtnHeader">
+                        <i class="fa-solid fa-user"></i>
+                        <span>Đăng Nhập</span>
+                    </a>
+                </div>
+
+                <a href="/cart" class="action-btn">
+                    <i class="fa-solid fa-cart-shopping"></i>
+                    <span>Giỏ hàng</span>
+                    <span class="cart-badge" id="cartCountBadge">0</span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- NAVIGATION & MEGA MENU -->
+    <nav class="main-nav">
+        <div class="container nav-inner">
+            <div class="mega-menu-trigger">
+                <i class="fa-solid fa-bars"></i>
+                <span>DANH MỤC SẢN PHẨM</span>
+                <div class="mega-menu-content">
+                    <a href="/products?category_slug=laptop-gaming" class="mega-menu-item">
+                        <i class="fa-solid fa-laptop"></i> Laptop Gaming
+                    </a>
+                    <a href="/products?category_slug=laptop-van-phong" class="mega-menu-item">
+                        <i class="fa-solid fa-laptop-code"></i> Laptop Văn Phòng
+                    </a>
+                    <a href="/products?category_slug=pc-gaming" class="mega-menu-item">
+                        <i class="fa-solid fa-desktop"></i> PC G-Studio / Gaming
+                    </a>
+                    <a href="/products?category_slug=vga-card-man-hinh" class="mega-menu-item">
+                        <i class="fa-solid fa-microchip"></i> Card Màn Hình (VGA)
+                    </a>
+                    <a href="/products?category_slug=cpu-bo-vi-xu-ly" class="mega-menu-item">
+                        <i class="fa-solid fa-memory"></i> Bộ Vi Xử Lý (CPU)
+                    </a>
+                    <a href="/products?category_slug=mainboard-bo-mach-chu" class="mega-menu-item">
+                        <i class="fa-solid fa-server"></i> Bo Mạch Chủ (Mainboard)
+                    </a>
+                    <a href="/products?category_slug=ram-bo-nho" class="mega-menu-item">
+                        <i class="fa-solid fa-ticket-alt"></i> Bộ Nhớ RAM
+                    </a>
+                    <a href="/products?category_slug=man-hinh-may-tinh" class="mega-menu-item">
+                        <i class="fa-solid fa-tv"></i> Màn Hình Máy Tính
+                    </a>
+                    <a href="/products?category_slug=ban-phim-co" class="mega-menu-item">
+                        <i class="fa-solid fa-keyboard"></i> Bàn Phím Cơ
+                    </a>
+                    <a href="/products?category_slug=chuot-gaming" class="mega-menu-item">
+                        <i class="fa-solid fa-mouse"></i> Chuột Gaming
+                    </a>
+                </div>
+            </div>
+
+            <div class="nav-links">
+                <a href="/" class="nav-link"><i class="fa-solid fa-house"></i> Trang Chủ</a>
+                <a href="/products?is_flash_sale=true" class="nav-link highlight"><i class="fa-solid fa-bolt"></i> Flash Sale Giờ Vàng</a>
+                <a href="/products?category_slug=laptop-gaming" class="nav-link">Laptop Gaming</a>
+                <a href="/products?category_slug=pc-gaming" class="nav-link">PC G-Studio</a>
+                <a href="/pc-builder" class="nav-link"><i class="fa-solid fa-gear"></i> Xây Dựng Cấu Hình PC</a>
+                <a href="/products?category_slug=man-hinh-may-tinh" class="nav-link">Màn Hình</a>
+                <a href="/products?category_slug=ban-phim-co" class="nav-link">Gaming Gear</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- MAIN CONTENT -->
+    <main style="flex:1;">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- FLOATING AI SALES ASSISTANT WIDGET -->
+    <div class="ai-widget-button" onclick="AIChat.toggle()" title="Hỏi Trợ lý AI Tư vấn GearVN">
+        <i class="fa-solid fa-robot"></i>
+    </div>
+
+    <div class="ai-chat-window" id="aiChatWindow">
+        <div class="ai-chat-header">
+            <div style="display:flex;align-items:center;gap:10px;">
+                <div style="width:10px;height:10px;background:#10b981;border-radius:50%;"></div>
+                <div>
+                    <div style="font-weight:700;font-size:14px;">Trợ Lý AI GearVN 🤖</div>
+                    <div style="font-size:11px;opacity:0.8;">Tư vấn cấu hình & sản phẩm 24/7</div>
+                </div>
+            </div>
+            <button onclick="AIChat.toggle()" style="background:transparent;border:none;color:#fff;font-size:16px;cursor:pointer;">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+
+        <div class="ai-chat-body" id="aiChatBody">
+            <div class="chat-bubble ai">
+                👋 Chào bạn! Em là <strong>Trợ lý AI GearVN</strong>.<br>
+                Em có thể giúp bạn:
+                <ul style="margin:6px 0 0 16px;list-style:disc;font-size:12px;">
+                    <li>Tư vấn Laptop / PC theo ngân sách & nhu cầu</li>
+                    <li>Kiểm tra thông số game AAA (Black Myth: Wukong, Valorant...)</li>
+                    <li>Gợi ý linh kiện nâng cấp tối ưu</li>
+                </ul>
+            </div>
+        </div>
+
+        <div style="padding:6px 12px;background:#fff;border-top:1px solid #eee;display:flex;gap:4px;overflow-x:auto;">
+            <button class="btn btn-outline" style="font-size:11px;padding:3px 8px;white-space:nowrap;border-radius:12px;" onclick="AIChat.quickAsk('Tư vấn laptop gaming tầm 20 triệu chơi Valorant')">🎮 Laptop 20 triệu</button>
+            <button class="btn btn-outline" style="font-size:11px;padding:3px 8px;white-space:nowrap;border-radius:12px;" onclick="AIChat.quickAsk('Gợi ý PC đồ họa render video 4K')">🎨 PC Đồ Họa 4K</button>
+            <button class="btn btn-outline" style="font-size:11px;padding:3px 8px;white-space:nowrap;border-radius:12px;" onclick="AIChat.quickAsk('Có màn hình 2K 180Hz nào ngon bổ rẻ không?')">🖥️ Màn hình 2K</button>
+        </div>
+
+        <div class="ai-chat-input-box">
+            <input type="text" id="aiChatInput" placeholder="Nhập câu hỏi cho AI..." style="flex:1;border:1px solid #cbd5e1;border-radius:6px;padding:8px 12px;font-size:13px;outline:none;" onkeydown="if(event.key==='Enter') AIChat.send()">
+            <button class="btn btn-primary" onclick="AIChat.send()" style="padding:8px 14px;">
+                <i class="fa-solid fa-paper-plane"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- SITE FOOTER -->
+    <footer class="site-footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div>
+                    <div class="brand-logo" style="color:var(--text-main);margin-bottom:12px;">
+                        <i class="fa-solid fa-gamepad" style="color:var(--primary);"></i>
+                        <span>GEAR<span style="color:var(--primary);">VN</span></span>
+                    </div>
+                    <p style="font-size:12px;color:#6b7280;margin-bottom:8px;">Hệ thống bán lẻ thiết bị công nghệ, Hi-End PC, Laptop Gaming và Gaming Gear hàng đầu Việt Nam.</p>
+                    <p style="font-size:12px;color:#6b7280;">Hotline tư vấn miễn phí: <strong>1800 6975</strong></p>
+                    <p style="font-size:12px;color:#6b7280;">Email: cskh@gearvn.com</p>
+                </div>
+                <div>
+                    <div class="footer-title">CHÍNH SÁCH BÁN HÀNG</div>
+                    <ul style="font-size:12px;color:#6b7280;display:flex;flex-direction:column;gap:6px;">
+                        <li>Chính sách bảo hành 1 đổi 1 trong 30 ngày</li>
+                        <li>Chính sách đổi trả & hoàn tiền</li>
+                        <li>Chính sách vận chuyển & giao hàng hỏa tốc</li>
+                        <li>Hướng dẫn mua trả góp 0% lãi suất</li>
+                    </ul>
+                </div>
+                <div>
+                    <div class="footer-title">HỖ TRỢ KHÁCH HÀNG</div>
+                    <ul style="font-size:12px;color:#6b7280;display:flex;flex-direction:column;gap:6px;">
+                        <li>Hướng dẫn mua hàng và thanh toán</li>
+                        <li>Tra cứu tình trạng đơn hàng trực tuyến</li>
+                        <li>Quy định bảo mật thông tin</li>
+                        <li>Góp ý, phản ánh dịch vụ</li>
+                    </ul>
+                </div>
+            </div>
+            <div style="text-align:center;font-size:12px;color:#9ca3af;border-top:1px solid #f0f0f0;padding-top:16px;">
+                © 2026 GearVN. Tất cả các quyền được bảo lưu.
+            </div>
+        </div>
+    </footer>
+
+    <!-- Core Scripts -->
+    <script src="/static/js/main.js"></script>
+    <script src="/static/js/ai_chat.js"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

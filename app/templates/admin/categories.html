@@ -1,0 +1,185 @@
+{% extends "admin/layout.html" %}
+
+{% block page_title %}Quản Lý Danh Mục Sản Phẩm (Thêm / Sửa / Xóa Danh Mục){% endblock %}
+
+{% block content %}
+<div style="display:grid;grid-template-columns:1fr 380px;gap:24px;">
+
+    <!-- Categories List Table -->
+    <div class="stat-card">
+        <div style="font-weight:700;font-size:16px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;">
+            <span>Danh Sách Danh Mục Hiện Tại ({{ categories|length }})</span>
+            <button class="btn btn-outline" style="font-size:12px;padding:4px 10px;" onclick="resetCategoryForm()">
+                <i class="fa-solid fa-rotate-left"></i> Đặt lại form thêm mới
+            </button>
+        </div>
+        <table style="width:100%;font-size:13px;border-collapse:collapse;text-align:left;">
+            <thead>
+                <tr style="background:#f8fafc;border-bottom:2px solid #e2e8f0;color:#64748b;">
+                    <th style="padding:10px;">ID</th>
+                    <th style="padding:10px;">Icon</th>
+                    <th style="padding:10px;">Tên danh mục</th>
+                    <th style="padding:10px;">Slug</th>
+                    <th style="padding:10px;">Số sản phẩm</th>
+                    <th style="padding:10px;text-align:center;">Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for c in categories %}
+                <tr id="cat-row-{{ c.id }}" style="border-bottom:1px solid #f1f5f9;">
+                    <td style="padding:10px;font-weight:700;">#{{ c.id }}</td>
+                    <td style="padding:10px;color:var(--primary);font-size:16px;"><i class="fa-solid {{ c.icon or 'fa-tag' }}"></i></td>
+                    <td style="padding:10px;font-weight:600;">{{ c.name }}</td>
+                    <td style="padding:10px;color:#64748b;"><code>{{ c.slug }}</code></td>
+                    <td style="padding:10px;">{{ c.products|length }}</td>
+                    <td style="padding:10px;text-align:center;">
+                        <div style="display:flex;gap:6px;justify-content:center;">
+                            <button class="btn btn-outline" style="padding:4px 8px;font-size:11px;color:#2563eb;background:#eff6ff;" onclick="editCategory({{ c.id }}, '{{ c.name|replace("'", "\\'") }}', '{{ c.slug }}', '{{ c.icon or 'fa-tag' }}', '{{ (c.description or '')|replace("'", "\\'") }}')">
+                                <i class="fa-solid fa-pen-to-square"></i> Sửa
+                            </button>
+                            <button class="btn btn-outline" style="padding:4px 8px;font-size:11px;color:#ef4444;background:#fef2f2;" onclick="deleteCategory({{ c.id }}, '{{ c.name|replace("'", "\\'") }}')">
+                                <i class="fa-solid fa-trash"></i> Xóa
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Create / Edit Category Form -->
+    <div class="stat-card" style="height:fit-content;">
+        <div id="catFormTitle" style="font-weight:700;font-size:16px;margin-bottom:16px;">Thêm Danh Mục Mới</div>
+        <form id="categoryForm" onsubmit="handleSaveCategory(event)">
+            <input type="hidden" id="catId" value="">
+            <div style="margin-bottom:12px;">
+                <label style="font-size:12px;font-weight:600;">Tên danh mục *</label>
+                <input type="text" id="catName" required placeholder="Ví dụ: Thiết Bị VR / AR" style="width:100%;padding:8px;border:1px solid #cbd5e1;border-radius:6px;font-size:13px;" oninput="autoGenCatSlug()">
+            </div>
+            <div style="margin-bottom:12px;">
+                <label style="font-size:12px;font-weight:600;">Slug URL *</label>
+                <input type="text" id="catSlug" required placeholder="thiet-bi-vr-ar" style="width:100%;padding:8px;border:1px solid #cbd5e1;border-radius:6px;font-size:13px;">
+            </div>
+            <div style="margin-bottom:12px;">
+                <label style="font-size:12px;font-weight:600;">FontAwesome Icon Class</label>
+                <input type="text" id="catIcon" placeholder="fa-vr-cardboard" value="fa-tag" style="width:100%;padding:8px;border:1px solid #cbd5e1;border-radius:6px;font-size:13px;">
+            </div>
+            <div style="margin-bottom:12px;">
+                <label style="font-size:12px;font-weight:600;">Mô tả ngắn</label>
+                <textarea id="catDesc" rows="2" placeholder="Mô tả nhóm sản phẩm..." style="width:100%;padding:8px;border:1px solid #cbd5e1;border-radius:6px;font-size:13px;"></textarea>
+            </div>
+            <div style="display:flex;gap:8px;">
+                <button type="button" id="cancelEditCatBtn" class="btn btn-outline" style="display:none;width:50%;padding:10px;" onclick="resetCategoryForm()">
+                    Hủy sửa
+                </button>
+                <button type="submit" id="catSubmitBtn" class="btn btn-primary" style="flex:1;padding:10px;">
+                    <i class="fa-solid fa-plus"></i> <span id="catSubmitText">Tạo Danh Mục</span>
+                </button>
+            </div>
+        </form>
+    </div>
+
+</div>
+
+<script>
+let editingCatId = null;
+
+function autoGenCatSlug() {
+    if (editingCatId) return;
+    const name = document.getElementById("catName").value;
+    const slug = name.toLowerCase()
+        .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+        .replace(/đ/g, "d").replace(/Đ/g, "d")
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/(^-|-$)/g, '');
+    document.getElementById("catSlug").value = slug;
+}
+
+function editCategory(id, name, slug, icon, desc) {
+    editingCatId = id;
+    document.getElementById("catId").value = id;
+    document.getElementById("catName").value = name;
+    document.getElementById("catSlug").value = slug;
+    document.getElementById("catIcon").value = icon || "fa-tag";
+    document.getElementById("catDesc").value = desc || "";
+
+    document.getElementById("catFormTitle").innerText = `Chỉnh Sửa Danh Mục #${id}`;
+    document.getElementById("catSubmitText").innerText = "Lưu Thay Đổi";
+    document.getElementById("cancelEditCatBtn").style.display = "block";
+}
+
+function resetCategoryForm() {
+    editingCatId = null;
+    document.getElementById("categoryForm").reset();
+    document.getElementById("catId").value = "";
+    document.getElementById("catFormTitle").innerText = "Thêm Danh Mục Mới";
+    document.getElementById("catSubmitText").innerText = "Tạo Danh Mục";
+    document.getElementById("cancelEditCatBtn").style.display = "none";
+}
+
+async function handleSaveCategory(e) {
+    e.preventDefault();
+    const token = localStorage.getItem("gearvn_token");
+    const headers = { "Content-Type": "application/json" };
+    if (token) headers["Authorization"] = `Bearer ${token}`;
+
+    const catId = document.getElementById("catId").value;
+    const name = document.getElementById("catName").value.trim();
+    let slug = document.getElementById("catSlug").value.trim();
+    if (!slug) {
+        slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    }
+
+    const payload = {
+        name: name,
+        slug: slug,
+        icon: document.getElementById("catIcon").value.trim() || "fa-tag",
+        description: document.getElementById("catDesc").value.trim()
+    };
+
+    const isEdit = !!catId;
+    const url = isEdit ? `/api/v1/categories/${catId}` : "/api/v1/categories/";
+    const method = isEdit ? "PUT" : "POST";
+
+    try {
+        const res = await fetch(url, {
+            method: method,
+            headers: headers,
+            body: JSON.stringify(payload)
+        });
+        if (res.ok) {
+            showToast(isEdit ? "Cập nhật danh mục thành công!" : "Thêm danh mục thành công!");
+            setTimeout(() => window.location.reload(), 700);
+        } else {
+            const data = await res.json();
+            showToast("Lỗi: " + (data.detail || "Không thể lưu danh mục"), "error");
+        }
+    } catch (e) {
+        showToast("Lỗi kết nối", "error");
+    }
+}
+
+async function deleteCategory(id, name) {
+    if (!confirm(`Bạn có chắc chắn muốn xóa danh mục: "${name}" không?`)) return;
+    const token = localStorage.getItem("gearvn_token");
+    const headers = {};
+    if (token) headers["Authorization"] = `Bearer ${token}`;
+
+    try {
+        const res = await fetch(`/api/v1/categories/${id}`, { method: "DELETE", headers: headers });
+        if (res.ok) {
+            showToast("Đã xóa danh mục!");
+            const row = document.getElementById(`cat-row-${id}`);
+            if (row) row.remove();
+            else setTimeout(() => window.location.reload(), 600);
+        } else {
+            const data = await res.json();
+            showToast(data.detail || "Lỗi khi xóa", "error");
+        }
+    } catch (e) {
+        showToast("Lỗi khi xóa", "error");
+    }
+}
+</script>
+{% endblock %}

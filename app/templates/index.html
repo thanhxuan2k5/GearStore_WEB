@@ -1,0 +1,179 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+
+    <!-- HERO SECTION -->
+    <section class="hero-section">
+        <div class="hero-grid">
+            <!-- Sidebar Quick Categories -->
+            <div class="category-sidebar">
+                <a href="/products?category_slug=laptop-gaming" class="cat-item">
+                    <span><i class="fa-solid fa-laptop" style="width:24px;color:var(--primary);"></i> Laptop Gaming</span>
+                    <i class="fa-solid fa-chevron-right" style="font-size:10px;color:#999;"></i>
+                </a>
+                <a href="/products?category_slug=pc-gaming" class="cat-item">
+                    <span><i class="fa-solid fa-desktop" style="width:24px;color:var(--primary);"></i> PC G-Studio / Gaming</span>
+                    <i class="fa-solid fa-chevron-right" style="font-size:10px;color:#999;"></i>
+                </a>
+                <a href="/products?category_slug=vga-card-man-hinh" class="cat-item">
+                    <span><i class="fa-solid fa-microchip" style="width:24px;color:var(--primary);"></i> Card Màn Hình (VGA)</span>
+                    <i class="fa-solid fa-chevron-right" style="font-size:10px;color:#999;"></i>
+                </a>
+                <a href="/products?category_slug=cpu-bo-vi-xu-ly" class="cat-item">
+                    <span><i class="fa-solid fa-memory" style="width:24px;color:var(--primary);"></i> Bộ Vi Xử Lý (CPU)</span>
+                    <i class="fa-solid fa-chevron-right" style="font-size:10px;color:#999;"></i>
+                </a>
+                <a href="/products?category_slug=man-hinh-may-tinh" class="cat-item">
+                    <span><i class="fa-solid fa-tv" style="width:24px;color:var(--primary);"></i> Màn Hình Máy Tính</span>
+                    <i class="fa-solid fa-chevron-right" style="font-size:10px;color:#999;"></i>
+                </a>
+                <a href="/products?category_slug=ban-phim-co" class="cat-item">
+                    <span><i class="fa-solid fa-keyboard" style="width:24px;color:var(--primary);"></i> Bàn Phím Cơ</span>
+                    <i class="fa-solid fa-chevron-right" style="font-size:10px;color:#999;"></i>
+                </a>
+                <a href="/products?category_slug=chuot-gaming" class="cat-item">
+                    <span><i class="fa-solid fa-mouse" style="width:24px;color:var(--primary);"></i> Chuột Gaming</span>
+                    <i class="fa-solid fa-chevron-right" style="font-size:10px;color:#999;"></i>
+                </a>
+            </div>
+
+            <!-- Hero Main Banner -->
+            <div class="hero-banner-main">
+                <span style="background:var(--primary);color:#fff;padding:4px 10px;border-radius:4px;font-size:12px;font-weight:700;width:fit-content;margin-bottom:12px;">GEARVN SPECIAL SALE 2026</span>
+                <h1>HI-END GAMING PC & <span>RTX 40 SERIES</span></h1>
+                <p style="font-size:14px;color:#94a3b8;margin-bottom:20px;max-width:460px;">Chiến mượt mà Black Myth: Wukong, GTA VI với dàn máy tính cấu hình khủng tối ưu bởi kỹ sư GearVN.</p>
+                <div style="display:flex;gap:12px;">
+                    <a href="/products?category_slug=pc-gaming" class="btn btn-primary" style="padding:10px 24px;font-size:14px;">
+                        <i class="fa-solid fa-cart-shopping"></i> Mua ngay giá sốc
+                    </a>
+                    <a href="/pc-builder" class="btn btn-outline" style="padding:10px 20px;font-size:14px;background:rgba(255,255,255,0.1);color:#fff;border-color:rgba(255,255,255,0.3);">
+                        <i class="fa-solid fa-screwdriver-wrench"></i> Tự Build Cấu Hình
+                    </a>
+                </div>
+            </div>
+
+            <!-- Sub Banners -->
+            <div class="hero-sub-banners">
+                <div class="sub-banner-card">
+                    <div style="font-size:28px;color:var(--primary);"><i class="fa-solid fa-truck-fast"></i></div>
+                    <div>
+                        <div style="font-weight:700;font-size:13px;">GIAO HÀNG HỎA TỐC 2H</div>
+                        <div style="font-size:12px;color:#6b7280;">Nội thành TP.HCM & Hà Nội</div>
+                    </div>
+                </div>
+                <div class="sub-banner-card">
+                    <div style="font-size:28px;color:var(--primary);"><i class="fa-solid fa-shield-halved"></i></div>
+                    <div>
+                        <div style="font-weight:700;font-size:13px;">BẢO HÀNH 1 ĐỔI 1</div>
+                        <div style="font-size:12px;color:#6b7280;">Đổi mới 30 ngày đầu lỗi SX</div>
+                    </div>
+                </div>
+                <div class="sub-banner-card">
+                    <div style="font-size:28px;color:var(--primary);"><i class="fa-solid fa-robot"></i></div>
+                    <div>
+                        <div style="font-weight:700;font-size:13px;">TRỢ LÝ AI TƯ VẤN</div>
+                        <div style="font-size:12px;color:#6b7280;">Hỏi cấu hình & giá 24/7</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FLASH SALE SECTION -->
+    <section class="flash-sale-block">
+        <div class="flash-sale-header">
+            <div class="flash-sale-title">
+                <i class="fa-solid fa-bolt" style="font-size:24px;"></i>
+                <span>FLASH SALE GIỜ VÀNG</span>
+            </div>
+            <div class="countdown-box">
+                <span>Kết thúc sau:</span>
+                <span class="time-digit" id="fsHours">08</span> :
+                <span class="time-digit" id="fsMins">45</span> :
+                <span class="time-digit" id="fsSecs">30</span>
+            </div>
+        </div>
+
+        <div class="product-grid">
+            {% for product in flash_sale_products %}
+            <div class="product-card">
+                <span class="badge-discount">-{{ ((product.original_price - product.promo_price) / product.original_price * 100)|round|int }}%</span>
+                <a href="/product/{{ product.slug }}">
+                    <img src="{{ product.thumbnail or 'https://images.unsplash.com/photo-1603302576837-37561b2e2302?w=800' }}" alt="{{ product.name }}" class="product-thumb" onerror="this.src='https://images.unsplash.com/photo-1603302576837-37561b2e2302?w=800'">
+                    <h3 class="product-title">{{ product.name }}</h3>
+                </a>
+
+                <div class="price-box">
+                    <span class="promo-price">{{ "{:,.0f}".format(product.promo_price) }} đ</span>
+                    <span class="original-price">{{ "{:,.0f}".format(product.original_price) }} đ</span>
+                </div>
+
+                <div class="product-meta">
+                    <div class="rating-stars">
+                        <i class="fa-solid fa-star"></i> {{ product.rating_avg }} ({{ product.rating_count }})
+                    </div>
+                    <span style="color:#10b981;font-size:11px;font-weight:600;"><i class="fa-solid fa-check"></i> Còn hàng</span>
+                </div>
+
+                <button class="btn btn-primary" style="margin-top:10px;width:100%;" onclick="Cart.addItem({id: {{ product.id }}, name: '{{ product.name|replace('\'', '\\\'') }}', slug: '{{ product.slug }}', promo_price: {{ product.promo_price }}, original_price: {{ product.original_price }}, thumbnail: '{{ product.thumbnail }}'}, 1)">
+                    <i class="fa-solid fa-cart-plus"></i> Thêm vào giỏ
+                </button>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+
+    <!-- FEATURED LAPTOPS & PCS -->
+    <section>
+        <div class="section-header">
+            <div class="section-title">LAPTOP GAMING & ĐỒ HỌA BÁN CHẠY</div>
+            <a href="/products?category_slug=laptop-gaming" style="color:var(--primary);font-weight:600;font-size:13px;">Xem tất cả <i class="fa-solid fa-arrow-right"></i></a>
+        </div>
+        <div class="product-grid">
+            {% for product in featured_laptops %}
+            <div class="product-card">
+                {% if product.original_price > product.promo_price %}
+                <span class="badge-discount">-{{ ((product.original_price - product.promo_price) / product.original_price * 100)|round|int }}%</span>
+                {% endif %}
+                <a href="/product/{{ product.slug }}">
+                    <img src="{{ product.thumbnail or 'https://images.unsplash.com/photo-1603302576837-37561b2e2302?w=800' }}" alt="{{ product.name }}" class="product-thumb" onerror="this.src='https://images.unsplash.com/photo-1603302576837-37561b2e2302?w=800'">
+                    <h3 class="product-title">{{ product.name }}</h3>
+                </a>
+
+                <div class="price-box">
+                    <span class="promo-price">{{ "{:,.0f}".format(product.promo_price) }} đ</span>
+                    {% if product.original_price > product.promo_price %}
+                    <span class="original-price">{{ "{:,.0f}".format(product.original_price) }} đ</span>
+                    {% endif %}
+                </div>
+
+                <div class="product-meta">
+                    <div class="rating-stars">
+                        <i class="fa-solid fa-star"></i> {{ product.rating_avg }} ({{ product.rating_count }})
+                    </div>
+                    <span>Đã bán: {{ product.sales_count }}</span>
+                </div>
+
+                <button class="btn btn-outline" style="margin-top:10px;width:100%;" onclick="Cart.addItem({id: {{ product.id }}, name: '{{ product.name|replace('\'', '\\\'') }}', slug: '{{ product.slug }}', promo_price: {{ product.promo_price }}, original_price: {{ product.original_price }}, thumbnail: '{{ product.thumbnail }}'}, 1)">
+                    <i class="fa-solid fa-cart-plus"></i> Thêm vào giỏ
+                </button>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+
+    <!-- PC BUILDER PROMO BANNER -->
+    <section style="background:#0f172a;border-radius:var(--radius);padding:24px 32px;margin:32px 0;display:flex;align-items:center;justify-content:space-between;color:#fff;">
+        <div>
+            <span style="background:var(--primary);color:#fff;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:bold;">TÍNH NĂNG ĐỘC QUYỀN</span>
+            <h2 style="font-size:22px;font-weight:800;margin:6px 0;">CÔNG CỤ XÂY DỰNG CẤU HÌNH PC VỚI AI KIỂM TRA TƯƠNG THÍCH</h2>
+            <p style="font-size:13px;color:#94a3b8;max-width:600px;">Tự do lựa chọn CPU, VGA RTX 4070, RAM DDR5... Hệ thống tự động kiểm tra Socket, chuẩn bus và đề xuất nguồn PSU chuẩn xác nhất.</p>
+        </div>
+        <a href="/pc-builder" class="btn btn-primary" style="padding:12px 24px;font-size:14px;white-space:nowrap;">
+            <i class="fa-solid fa-screwdriver-wrench"></i> Bắt đầu Build PC ngay
+        </a>
+    </section>
+
+</div>
+{% endblock %}

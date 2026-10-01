@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+
+{% block title %}Danh Sách Sản Phẩm - GearVN{% endblock %}
+
+{% block content %}
+<div class="container" style="margin-top:20px;">
+
+    <!-- Breadcrumb -->
+    <div style="font-size:12px;color:#6b7280;margin-bottom:16px;">
+        <a href="/">Trang chủ</a> &gt; <span style="color:#111;font-weight:600;">{{ category_name or 'Tất cả sản phẩm' }}</span>
+    </div>
+
+    <div style="display:grid;grid-template-columns:260px 1fr;gap:20px;">
+        
+        <!-- SIDEBAR SPECS FILTER (GEARVN STYLE) -->
+        <aside style="background:#fff;border:1px solid var(--border-color);border-radius:var(--radius);padding:16px;">
+            <div style="font-weight:700;font-size:15px;margin-bottom:14px;border-bottom:2px solid #f0f0f0;padding-bottom:8px;display:flex;align-items:center;justify-content:space-between;">
+                <span><i class="fa-solid fa-filter" style="color:var(--primary);"></i> Bộ Lọc Thông Số</span>
+                <a href="/products" style="font-size:11px;color:var(--primary);">Xóa lọc</a>
+            </div>
+
+            <form action="/products" method="GET" id="filterForm">
+                {% if category_slug %}<input type="hidden" name="category_slug" value="{{ category_slug }}">{% endif %}
+
+                <!-- Price Range -->
+                <div style="margin-bottom:16px;">
+                    <div style="font-weight:600;font-size:13px;margin-bottom:8px;">Mức Giá</div>
+                    <div style="display:flex;flex-direction:column;gap:6px;font-size:12px;">
+                        <label><input type="radio" name="price_range" value="under_15m" onchange="applyPrice(0, 15000000)"> Dưới 15 triệu</label>
+                        <label><input type="radio" name="price_range" value="15m_25m" onchange="applyPrice(15000000, 25000000)"> 15 - 25 triệu</label>
+                        <label><input type="radio" name="price_range" value="25m_40m" onchange="applyPrice(25000000, 40000000)"> 25 - 40 triệu</label>
+                        <label><input type="radio" name="price_range" value="above_40m" onchange="applyPrice(40000000, 999000000)"> Trên 40 triệu</label>
+                    </div>
+                    <input type="hidden" name="min_price" id="minPriceInput" value="{{ min_price or '' }}">
+                    <input type="hidden" name="max_price" id="maxPriceInput" value="{{ max_price or '' }}">
+                </div>
+
+                <!-- CPU Filter -->
+                <div style="margin-bottom:16px;">
+                    <div style="font-weight:600;font-size:13px;margin-bottom:8px;">Vi Xử Lý (CPU)</div>
+                    <div style="display:flex;flex-direction:column;gap:6px;font-size:12px;">
+                        <label><input type="radio" name="cpu" value="i5" {% if cpu == 'i5' %}checked{% endif %} onchange="this.form.submit()"> Intel Core i5</label>
+                        <label><input type="radio" name="cpu" value="i7" {% if cpu == 'i7' %}checked{% endif %} onchange="this.form.submit()"> Intel Core i7 / Ultra 7</label>
+                        <label><input type="radio" name="cpu" value="i9" {% if cpu == 'i9' %}checked{% endif %} onchange="this.form.submit()"> Intel Core i9</label>
+                        <label><input type="radio" name="cpu" value="Ryzen" {% if cpu == 'Ryzen' %}checked{% endif %} onchange="this.form.submit()"> AMD Ryzen 7 / 9</label>
+                    </div>
+                </div>
+
+                <!-- GPU Filter -->
+                <div style="margin-bottom:16px;">
+                    <div style="font-weight:600;font-size:13px;margin-bottom:8px;">Card Đồ Họa (GPU)</div>
+                    <div style="display:flex;flex-direction:column;gap:6px;font-size:12px;">
+                        <label><input type="radio" name="gpu" value="4050" {% if gpu == '4050' %}checked{% endif %} onchange="this.form.submit()"> RTX 4050</label>
+                        <label><input type="radio" name="gpu" value="4060" {% if gpu == '4060' %}checked{% endif %} onchange="this.form.submit()"> RTX 4060</label>
+                        <label><input type="radio" name="gpu" value="4070" {% if gpu == '4070' %}checked{% endif %} onchange="this.form.submit()"> RTX 4070 / Super</label>
+                        <label><input type="radio" name="gpu" value="4080" {% if gpu == '4080' %}checked{% endif %} onchange="this.form.submit()"> RTX 4080</label>
+                    </div>
+                </div>
+
+                <!-- Brand Filter -->
+                <div style="margin-bottom:16px;">
+                    <div style="font-weight:600;font-size:13px;margin-bottom:8px;">Thương Hiệu</div>
+                    <div style="display:flex;flex-direction:column;gap:6px;font-size:12px;">
+                        <label><input type="radio" name="brand" value="ASUS" {% if brand == 'ASUS' %}checked{% endif %} onchange="this.form.submit()"> ASUS ROG / TUF</label>
+                        <label><input type="radio" name="brand" value="Acer" {% if brand == 'Acer' %}checked{% endif %} onchange="this.form.submit()"> Acer Nitro / Predator</label>
+                        <label><input type="radio" name="brand" value="MSI" {% if brand == 'MSI' %}checked{% endif %} onchange="this.form.submit()"> MSI Gaming</label>
+                        <label><input type="radio" name="brand" value="Corsair" {% if brand == 'Corsair' %}checked{% endif %} onchange="this.form.submit()"> Corsair</label>
+                        <label><input type="radio" name="brand" value="Logitech" {% if brand == 'Logitech' %}checked{% endif %} onchange="this.form.submit()"> Logitech G</label>
+                    </div>
+                </div>
+            </form>
+        </aside>
+
+        <!-- PRODUCT LIST CONTENT -->
+        <div>
+            <!-- Header Bar with Sorting -->
+            <div style="background:#fff;border:1px solid var(--border-color);border-radius:var(--radius);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+                <div style="font-size:14px;font-weight:700;">
+                    Tìm thấy <span style="color:var(--primary);">{{ products|length }}</span> sản phẩm
+                </div>
+                <div style="display:flex;align-items:center;gap:10px;font-size:13px;">
+                    <span>Sắp xếp theo:</span>
+                    <select onchange="location = this.value;" style="padding:6px 12px;border:1px solid #cbd5e1;border-radius:6px;outline:none;">
+                        <option value="?sort_by=newest" {% if sort_by == 'newest' %}selected{% endif %}>Mới nhất</option>
+                        <option value="?sort_by=price_asc" {% if sort_by == 'price_asc' %}selected{% endif %}>Giá tăng dần</option>
+                        <option value="?sort_by=price_desc" {% if sort_by == 'price_desc' %}selected{% endif %}>Giá giảm dần</option>
+                        <option value="?sort_by=bestseller" {% if sort_by == 'bestseller' %}selected{% endif %}>Bán chạy nhất</option>
+                        <option value="?sort_by=rating" {% if sort_by == 'rating' %}selected{% endif %}>Đánh giá cao nhất</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Product Grid -->
+            <div class="product-grid">
+                {% for product in products %}
+                <div class="product-card">
+                    {% if product.original_price > product.promo_price %}
+                    <span class="badge-discount">-{{ ((product.original_price - product.promo_price) / product.original_price * 100)|round|int }}%</span>
+                    {% endif %}
+                    <a href="/product/{{ product.slug }}">
+                        <img src="{{ product.thumbnail or 'https://images.unsplash.com/photo-1603302576837-37561b2e2302?w=800' }}" alt="{{ product.name }}" class="product-thumb" onerror="this.src='https://images.unsplash.com/photo-1603302576837-37561b2e2302?w=800'">
+                        <h3 class="product-title">{{ product.name }}</h3>
+                    </a>
+
+                    <div class="price-box">
+                        <span class="promo-price">{{ "{:,.0f}".format(product.promo_price) }} đ</span>
+                        {% if product.original_price > product.promo_price %}
+                        <span class="original-price">{{ "{:,.0f}".format(product.original_price) }} đ</span>
+                        {% endif %}
+                    </div>
+
+                    <div class="product-meta">
+                        <div class="rating-stars">
+                            <i class="fa-solid fa-star"></i> {{ product.rating_avg }} ({{ product.rating_count }})
+                        </div>
+                        <span>Kho: {{ product.stock_quantity }}</span>
+                    </div>
+
+                    <button class="btn btn-primary" style="margin-top:10px;width:100%;" onclick="Cart.addItem({id: {{ product.id }}, name: '{{ product.name|replace('\'', '\\\'') }}', slug: '{{ product.slug }}', promo_price: {{ product.promo_price }}, original_price: {{ product.original_price }}, thumbnail: '{{ product.thumbnail }}'}, 1)">
+                        <i class="fa-solid fa-cart-plus"></i> Thêm vào giỏ
+                    </button>
+                </div>
+                {% else %}
+                <div style="grid-column:1/-1;background:#fff;padding:40px;text-align:center;border-radius:var(--radius);">
+                    <i class="fa-solid fa-box-open" style="font-size:40px;color:#94a3b8;margin-bottom:12px;"></i>
+                    <p style="color:#64748b;">Không tìm thấy sản phẩm nào khớp với bộ lọc bạn chọn.</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+function applyPrice(min, max) {
+    document.getElementById("minPriceInput").value = min;
+    document.getElementById("maxPriceInput").value = max;
+    document.getElementById("filterForm").submit();
+}
+</script>
+{% endblock %}
